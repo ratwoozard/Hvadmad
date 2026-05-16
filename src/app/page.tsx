@@ -78,15 +78,14 @@ export default function Home() {
         Ingen login. Ingen data. Bare mad. 🍽️
       </p>
 
-      <footer className="mt-8 text-center text-xs text-gray-300">
-        Lavet med ❤️ af{" "}
+      <footer className="fixed bottom-4 left-0 right-0 text-center">
         <a
           href="https://www.WeGoDigital.dk"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-gray-400 hover:text-brand-500 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-full bg-white/80 backdrop-blur-sm px-4 py-1.5 text-xs text-gray-400 shadow-sm border border-gray-100 hover:text-brand-500 transition-colors"
         >
-          WeGoDigital
+          <span className="font-medium">WeGoDigital</span>
         </a>
       </footer>
     </div>
