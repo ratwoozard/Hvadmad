@@ -6,6 +6,8 @@
 
 # testing
 /coverage
+/test-results
+/playwright-report
 
 # next.js
 /.next/
@@ -35,8 +37,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# cursor
-/.cursor/
+# IDE
+.cursor/
 
-# supabase local dev
-/supabase/
+# supabase local dev cache (NOT the migrations folder)
+.supabase/

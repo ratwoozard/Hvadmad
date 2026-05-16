@@ -1,0 +1,39 @@
+{
+  "name": "hvadmad",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.5.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "framer-motion": "^11.0.0",
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0"
+  },
+  "devDependencies": {
+    "@next/bundle-analyzer": "^16.2.6",
+    "@playwright/test": "^1.45.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.0",
+    "jsdom": "^29.1.1",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}

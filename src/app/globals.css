@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-inter: "Inter", system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+}
+
+/*
+ * Note: legacy .btn-primary / .btn-secondary / .btn-vote-* / .card / .input-field
+ * utility classes were removed in feature 002 (UI Polish & Animations) — all
+ * pages now use the React component primitives in src/components/ui/.
+ *
+ * Add new shared styling via Tailwind utility classes or React components,
+ * not by extending this stylesheet.
+ */
