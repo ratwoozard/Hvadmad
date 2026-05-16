@@ -4,6 +4,19 @@ import type { Vote, VoteValue } from "@/types/voting";
 import type { FoodOption } from "@/types/food";
 import type { AvatarConfiguration } from "@/types/avatar";
 
+type SupabaseErrorLike = {
+  code?: string;
+  message?: string;
+};
+
+function isMissingAvatarSchemaError(error: SupabaseErrorLike): boolean {
+  const message = error.message?.toLowerCase() ?? "";
+  return (
+    error.code === "PGRST204" &&
+    (message.includes("avatar_id") || message.includes("hat_ids"))
+  );
+}
+
 export async function createRoom(
   code: string,
   hostSessionId: string,
@@ -62,12 +75,13 @@ export async function joinRoom(
   isHost: boolean = false,
   avatar: AvatarConfiguration | null = null,
 ): Promise<Participant> {
-  const insertRow: Record<string, unknown> = {
+  const baseInsertRow: Record<string, unknown> = {
     room_id: roomId,
     session_id: sessionId,
     nickname,
     is_host: isHost,
   };
+  const insertRow: Record<string, unknown> = { ...baseInsertRow };
   if (avatar) {
     insertRow.avatar_id = avatar.avatar_id;
     insertRow.hat_ids = avatar.hat_ids;
@@ -78,6 +92,19 @@ export async function joinRoom(
     .insert(insertRow)
     .select()
     .single();
+
+  if (error && avatar && isMissingAvatarSchemaError(error)) {
+    const fallback = await supabase
+      .from("participants")
+      .insert(baseInsertRow)
+      .select()
+      .single();
+
+    if (fallback.error) {
+      throw new Error(`Kunne ikke joine rum: ${fallback.error.message}`);
+    }
+    return fallback.data;
+  }
 
   if (error) throw new Error(`Kunne ikke joine rum: ${error.message}`);
   return data;
