@@ -134,28 +134,28 @@ description: "Task list for feature 002-ui-polish-animations"
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T043 [P] [US3] Unit test for `MatchScoreCounter`: target-værdi nås efter `duration` ms (med fake timers) i `tests/unit/MatchScoreCounter.test.tsx`
-- [ ] T044 [P] [US3] Unit test for `RandomWheel`: landing-vinkel matcher valgt option i `tests/unit/RandomWheel.test.tsx`
+- [X] T043 [P] [US3] Unit test for `MatchScoreCounter`: target-værdi nås efter `duration` ms (med fake timers) i `tests/unit/MatchScoreCounter.test.tsx`
+- [X] T044 [P] [US3] Unit test for `RandomWheel`: landing-vinkel matcher valgt option i `tests/unit/RandomWheel.test.tsx`
 - [ ] T045 [P] [US3] E2E test: vote → kort forsvinder → næste kort synligt i `tests/e2e/vote-card-swipe.spec.ts`
 
 ### Vote-card stack med swipe
 
-- [ ] T046 [P] [US3] Implementér `<VoteCard>` med entry/exit-variants per retning per `contracts/components.md` § 8 i `src/components/voting/VoteCard.tsx`
-- [ ] T047 [US3] Refaktorér `src/app/rum/[kode]/stemme.tsx` til at bruge `<AnimatePresence mode="popLayout">` med stack-pattern (aktivt + næste kort)
-- [ ] T048 [P] [US3] Implementér `<VoteProgress>` med animeret fyld i `src/components/voting/VoteProgress.tsx`
-- [ ] T049 [US3] Tilføj keyboard-shortcuts (Pil op/ned/højre = ja/nej/måske) i `src/app/rum/[kode]/stemme.tsx`
+- [X] T046 [P] [US3] Implementér `<VoteCard>` med entry/exit-variants per retning per `contracts/components.md` § 8 i `src/components/voting/VoteCard.tsx`
+- [X] T047 [US3] Refaktorér `src/app/rum/[kode]/stemme.tsx` til at bruge `<AnimatePresence mode="popLayout">` med stack-pattern (aktivt + næste kort)
+- [X] T048 [P] [US3] Implementér `<VoteProgress>` med animeret fyld i `src/components/voting/VoteProgress.tsx`
+- [X] T049 [US3] Tilføj keyboard-shortcuts (Pil op/ned/højre = ja/nej/måske) i `src/app/rum/[kode]/stemme.tsx`
 
 ### Resultat-animationer
 
-- [ ] T050 [P] [US3] Implementér `<MatchScoreCounter>` med Framer Motion `useMotionValue` per `contracts/components.md` § 9 i `src/components/results/MatchScoreCounter.tsx`
-- [ ] T051 [P] [US3] Implementér `<ResultRow>` med stagger-baseret entry per `contracts/components.md` § 10 i `src/components/results/ResultRow.tsx`
-- [ ] T052 [US3] Refaktorér `src/app/rum/[kode]/resultat.tsx` til at bruge `<MatchScoreCounter>` og en liste af `<ResultRow>` med `staggerChildren`-variant
-- [ ] T053 [US3] Tilføj `aria-live="polite"` på matchprocent-container så skærmlæser annoncerer endelig værdi efter count-up
+- [X] T050 [P] [US3] Implementér `<MatchScoreCounter>` med Framer Motion `useMotionValue` per `contracts/components.md` § 9 i `src/components/results/MatchScoreCounter.tsx`
+- [X] T051 [P] [US3] Implementér `<ResultRow>` med stagger-baseret entry per `contracts/components.md` § 10 i `src/components/results/ResultRow.tsx`
+- [X] T052 [US3] Refaktorér `src/app/rum/[kode]/resultat.tsx` til at bruge `<MatchScoreCounter>` og en liste af `<ResultRow>` med `staggerChildren`-variant
+- [X] T053 [US3] Tilføj `aria-live="polite"` på matchprocent-container så skærmlæser annoncerer endelig værdi efter count-up
 
 ### Random wheel
 
-- [ ] T054 [US3] Implementér `<RandomWheel>` SVG-komponent med deterministisk landing og custom cubic-bezier easing per `contracts/components.md` § 11 i `src/components/results/RandomWheel.tsx`
-- [ ] T055 [US3] Integrér `<RandomWheel>` i `src/app/rum/[kode]/resultat.tsx` bag en "Spin hjulet"-knap (vises kun hvis ≥2 top-resultater)
+- [X] T054 [US3] Implementér `<RandomWheel>` SVG-komponent med deterministisk landing og custom cubic-bezier easing per `contracts/components.md` § 11 i `src/components/results/RandomWheel.tsx`
+- [X] T055 [US3] Integrér `<RandomWheel>` i `src/app/rum/[kode]/resultat.tsx` bag en "Spin hjulet"-knap (vises kun hvis ≥2 top-resultater)
 
 **Checkpoint**: Hele afstemnings- og resultatoplevelsen er poleret.
 
