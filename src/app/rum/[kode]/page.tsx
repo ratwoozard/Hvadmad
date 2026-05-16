@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import { getSessionId } from "@/lib/session";
 import {
-  getRoomByCode,
   getParticipants,
   getParticipantBySession,
 } from "@/lib/supabase/queries";
@@ -23,25 +22,36 @@ export default function RumPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const roomRef = useRef<Room | null>(null);
+
+  const refreshRoom = useCallback(async () => {
+    const { data: rooms } = await supabase
+      .from("rooms")
+      .select()
+      .eq("code", kode)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    const roomData = rooms && rooms.length > 0 ? rooms[0] : null;
+    if (roomData) {
+      setRoom(roomData);
+      roomRef.current = roomData;
+    }
+    return roomData;
+  }, [kode]);
 
   const refreshParticipants = useCallback(async (roomId: string) => {
     const list = await getParticipants(roomId);
     setParticipants(list);
   }, []);
 
+  // Initial load
   useEffect(() => {
     async function loadRoom() {
       try {
         const sessionId = getSessionId();
 
-        const { data: rooms } = await supabase
-          .from("rooms")
-          .select()
-          .eq("code", kode)
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        const roomData = rooms && rooms.length > 0 ? rooms[0] : null;
+        const roomData = await refreshRoom();
 
         if (!roomData) {
           setError("Rummet findes ikke eller er udløbet.");
@@ -60,11 +70,9 @@ export default function RumPage() {
           return;
         }
 
-        const participantsList = await getParticipants(roomData.id);
+        await refreshParticipants(roomData.id);
 
-        setRoom(roomData);
         setParticipant(participantData);
-        setParticipants(participantsList);
         setLoading(false);
       } catch (e: any) {
         setError(`Kunne ikke indlæse rummet: ${e.message}`);
@@ -73,43 +81,36 @@ export default function RumPage() {
     }
 
     loadRoom();
-  }, [kode]);
+  }, [kode, refreshRoom, refreshParticipants]);
 
-  // Subscribe to participant changes in real-time via DB changes
+  // Poll for changes every 2 seconds (reliable fallback for realtime)
   useEffect(() => {
     if (!room) return;
 
-    const channel = supabase
-      .channel(`db-participants-${room.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "participants",
-          filter: `room_id=eq.${room.id}`,
-        },
-        () => {
-          refreshParticipants(room.id);
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "rooms",
-          filter: `id=eq.${room.id}`,
-        },
-        (payload) => {
-          setRoom((prev) => (prev ? { ...prev, ...payload.new } : prev));
-        }
-      )
-      .subscribe();
+    const interval = setInterval(async () => {
+      const currentRoom = roomRef.current;
+      if (!currentRoom) return;
 
-    return () => {
-      channel.unsubscribe();
-    };
+      // Refresh participants
+      await refreshParticipants(currentRoom.id);
+
+      // Refresh room status
+      const { data: rooms } = await supabase
+        .from("rooms")
+        .select()
+        .eq("id", currentRoom.id)
+        .limit(1);
+
+      if (rooms && rooms.length > 0) {
+        const updatedRoom = rooms[0];
+        if (updatedRoom.status !== currentRoom.status) {
+          setRoom(updatedRoom);
+          roomRef.current = updatedRoom;
+        }
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
   }, [room?.id, refreshParticipants]);
 
   if (loading) {
@@ -144,7 +145,10 @@ export default function RumPage() {
           room={room}
           participant={participant}
           participants={participants}
-          onRoomUpdate={setRoom}
+          onRoomUpdate={(r) => {
+            setRoom(r);
+            roomRef.current = r;
+          }}
           onParticipantsUpdate={setParticipants}
         />
       );
@@ -154,7 +158,10 @@ export default function RumPage() {
         <Stemme
           room={room}
           participant={participant}
-          onRoomUpdate={setRoom}
+          onRoomUpdate={(r) => {
+            setRoom(r);
+            roomRef.current = r;
+          }}
         />
       );
     case "results":
