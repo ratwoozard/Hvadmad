@@ -4,20 +4,31 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import type { Room, Participant } from "@/types/room";
 import type { MatchResult } from "@/types/voting";
-import { getVotesForRoom, getRoomFoodOptions, getParticipants } from "@/lib/supabase/queries";
-import { calculateResults, getTopResults, hasAnyValidResult } from "@/lib/match/algorithm";
-import { getMatchLevel, getMatchColor } from "@/lib/match/scoring";
+import {
+  getVotesForRoom,
+  getRoomFoodOptions,
+  getParticipants,
+} from "@/lib/supabase/queries";
+import {
+  calculateResults,
+  getTopResults,
+  hasAnyValidResult,
+} from "@/lib/match/algorithm";
+import { resultStagger } from "@/lib/motion/variants";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { ResultRow } from "@/components/results/ResultRow";
+import { RandomWheel, type WheelOption } from "@/components/results/RandomWheel";
 
 interface ResultatProps {
   room: Room;
   participant: Participant;
 }
 
-export default function Resultat({ room, participant }: ResultatProps) {
+export default function Resultat({ room }: ResultatProps) {
   const [results, setResults] = useState<MatchResult[]>([]);
   const [loading, setLoading] = useState(true);
-  const [spinnerActive, setSpinnerActive] = useState(false);
-  const [spinnerResult, setSpinnerResult] = useState<MatchResult | null>(null);
+  const [wheelOpen, setWheelOpen] = useState(false);
 
   useEffect(() => {
     async function loadResults() {
@@ -27,7 +38,11 @@ export default function Resultat({ room, participant }: ResultatProps) {
         getParticipants(room.id),
       ]);
 
-      const calculated = calculateResults(votes, foodOptions, participants.length);
+      const calculated = calculateResults(
+        votes,
+        foodOptions,
+        participants.length,
+      );
       const top = getTopResults(calculated, 5);
       setResults(top);
       setLoading(false);
@@ -35,39 +50,20 @@ export default function Resultat({ room, participant }: ResultatProps) {
     loadResults();
   }, [room.id]);
 
-  const handleSpin = () => {
-    if (results.length === 0) return;
-    setSpinnerActive(true);
-    setSpinnerResult(null);
-
-    let spins = 0;
-    const maxSpins = 15;
-    const interval = setInterval(() => {
-      spins++;
-      const randomIdx = Math.floor(Math.random() * results.length);
-      setSpinnerResult(results[randomIdx]);
-
-      if (spins >= maxSpins) {
-        clearInterval(interval);
-        const finalIdx = Math.floor(Math.random() * Math.min(3, results.length));
-        setSpinnerResult(results[finalIdx]);
-        setSpinnerActive(false);
-      }
-    }, 150 + spins * 20);
-  };
-
   if (loading) {
     return (
       <div className="flex min-h-[80vh] items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl animate-bounce">📊</div>
+          <div className="animate-bounce text-4xl">📊</div>
           <p className="mt-2 text-gray-500">Beregner resultater...</p>
         </div>
       </div>
     );
   }
 
-  if (!hasAnyValidResult(results.map((r) => ({ ...r, is_eliminated: false })))) {
+  if (
+    !hasAnyValidResult(results.map((r) => ({ ...r, is_eliminated: false })))
+  ) {
     return (
       <div className="flex min-h-[80vh] flex-col items-center justify-center gap-4">
         <div className="text-6xl">😅</div>
@@ -75,86 +71,84 @@ export default function Resultat({ room, participant }: ResultatProps) {
         <p className="text-center text-gray-600">
           Gruppen kunne ikke blive enig om noget. Prøv en anden kategori!
         </p>
-        <a href="/" className="btn-primary mt-4">
+        <Button as="a" href="/" className="mt-4">
           🏠 Start forfra
-        </a>
+        </Button>
       </div>
     );
   }
 
+  const wheelOptions: WheelOption[] = results.slice(0, 3).map((r) => ({
+    id: r.food_option_id,
+    name: r.name,
+    emoji: r.emoji,
+  }));
+
   return (
     <div className="flex flex-col gap-6 py-4">
-      <div className="text-center">
+      <motion.div
+        className="text-center"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
         <h1 className="text-2xl font-bold text-gray-900">🎉 Resultater</h1>
         <p className="mt-1 text-gray-600">Her er gruppens bedste matches</p>
-      </div>
+      </motion.div>
 
-      <div className="flex flex-col gap-3">
+      <motion.div
+        variants={resultStagger}
+        initial="initial"
+        animate="animate"
+        className="flex flex-col gap-3"
+      >
         {results.map((result, index) => (
-          <motion.div
+          <ResultRow
             key={result.food_option_id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className={`card ${index === 0 ? "border-2 border-brand-500 shadow-md" : ""}`}
-          >
-            <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700">
-                {index + 1}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">{result.emoji || "🍽️"}</span>
-                  <h3 className="font-bold text-gray-900">{result.name}</h3>
-                </div>
-                <div className="mt-1 flex items-center gap-2">
-                  <div className="h-2 flex-1 rounded-full bg-gray-100">
-                    <div
-                      className="h-2 rounded-full bg-brand-500 transition-all"
-                      style={{ width: `${result.match_percentage}%` }}
-                    />
-                  </div>
-                  <span
-                    className={`text-sm font-bold ${getMatchColor(getMatchLevel(result.match_percentage))}`}
-                  >
-                    {result.match_percentage}%
-                  </span>
-                </div>
-                <p className="mt-1 text-sm text-gray-500">
-                  {result.explanation}
-                </p>
-              </div>
-            </div>
-          </motion.div>
+            rank={index + 1}
+            name={result.name}
+            emoji={result.emoji}
+            matchPercent={result.match_percentage}
+            explanation={result.explanation}
+            isTop={index === 0}
+          />
         ))}
-      </div>
+      </motion.div>
 
-      <div className="card text-center">
+      <Card className="text-center">
         <p className="mb-3 text-sm text-gray-500">Kan I ikke vælge?</p>
-        <button
-          onClick={handleSpin}
-          disabled={spinnerActive}
-          className="btn-primary w-full disabled:opacity-50"
-        >
-          {spinnerActive ? "🎰 Spinner..." : "🎲 Spin hjulet!"}
-        </button>
-        {spinnerResult && !spinnerActive && (
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="mt-4 rounded-xl bg-brand-50 p-4"
+        {!wheelOpen ? (
+          <Button
+            onClick={() => setWheelOpen(true)}
+            fullWidth
+            disabled={wheelOptions.length < 2}
           >
-            <p className="text-sm text-gray-500">Vinderen er:</p>
-            <p className="text-2xl font-bold text-brand-700">
-              {spinnerResult.emoji} {spinnerResult.name}
-            </p>
-          </motion.div>
+            🎲 Spin hjulet!
+          </Button>
+        ) : (
+          <RandomWheel
+            key={wheelOptions.map((o) => o.id).join("-")}
+            options={wheelOptions}
+            onResult={() => {
+              // Result already rendered inside RandomWheel via aria-live.
+            }}
+          />
         )}
-      </div>
+        {wheelOpen && (
+          <Button
+            onClick={() => setWheelOpen(false)}
+            variant="ghost"
+            size="sm"
+            className="mt-3"
+          >
+            Skjul hjulet
+          </Button>
+        )}
+      </Card>
 
-      <a href="/" className="btn-secondary w-full text-center">
+      <Button as="a" href="/" variant="secondary" fullWidth>
         🏠 Start forfra
-      </a>
+      </Button>
     </div>
   );
 }

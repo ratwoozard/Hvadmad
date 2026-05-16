@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useCallback, useEffect, useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import type { Room, Participant } from "@/types/room";
 import type { FoodOption } from "@/types/food";
 import type { VoteValue } from "@/types/voting";
@@ -18,11 +18,20 @@ import {
   broadcastVoteProgress,
   broadcastStatusChange,
 } from "@/lib/supabase/realtime";
+import { Button } from "@/components/ui/Button";
+import { VoteCard, type VoteDirection } from "@/components/voting/VoteCard";
+import { VoteProgress } from "@/components/voting/VoteProgress";
 
 interface StemmeProps {
   room: Room;
   participant: Participant;
   onRoomUpdate: (room: Room) => void;
+}
+
+function directionFor(value: VoteValue): VoteDirection {
+  if (value === VOTE_JA) return "ja";
+  if (value === VOTE_NEJ) return "nej";
+  return "maaske";
 }
 
 export default function Stemme({ room, participant, onRoomUpdate }: StemmeProps) {
@@ -31,6 +40,7 @@ export default function Stemme({ room, participant, onRoomUpdate }: StemmeProps)
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [exitDirection, setExitDirection] = useState<VoteDirection | null>(null);
 
   useEffect(() => {
     async function loadOptions() {
@@ -41,42 +51,80 @@ export default function Stemme({ room, participant, onRoomUpdate }: StemmeProps)
     loadOptions();
   }, [room.id]);
 
-  const handleVote = async (value: VoteValue) => {
-    if (submitting || currentIndex >= options.length) return;
-    setSubmitting(true);
+  const handleVote = useCallback(
+    async (value: VoteValue) => {
+      if (submitting || loading || currentIndex >= options.length) return;
+      setSubmitting(true);
+      setExitDirection(directionFor(value));
 
-    const option = options[currentIndex];
+      const option = options[currentIndex];
 
-    try {
-      await submitVote(room.id, participant.id, option.id, value);
+      try {
+        await submitVote(room.id, participant.id, option.id, value);
 
-      if (currentIndex + 1 >= options.length) {
-        await updateParticipantVoted(participant.id);
+        if (currentIndex + 1 >= options.length) {
+          await updateParticipantVoted(participant.id);
 
-        const channel = createRoomChannel(room.code);
-        broadcastVoteProgress(channel, {
-          session_id: getSessionId(),
-          nickname: participant.nickname,
-          total_voted: 0,
-          total_participants: 0,
-        });
+          const channel = createRoomChannel(room.code);
+          broadcastVoteProgress(channel, {
+            session_id: getSessionId(),
+            nickname: participant.nickname,
+            total_voted: 0,
+            total_participants: 0,
+          });
 
-        setDone(true);
-      } else {
-        setCurrentIndex((prev) => prev + 1);
+          window.setTimeout(() => setDone(true), 280);
+        } else {
+          window.setTimeout(() => {
+            setCurrentIndex((prev) => prev + 1);
+            setExitDirection(null);
+          }, 280);
+        }
+      } catch {
+        setExitDirection(null);
       }
-    } catch (e: any) {
-      // Retry silently
-    }
 
-    setSubmitting(false);
-  };
+      setSubmitting(false);
+    },
+    [
+      submitting,
+      loading,
+      currentIndex,
+      options,
+      room.id,
+      room.code,
+      participant.id,
+      participant.nickname,
+    ],
+  );
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.repeat) return;
+      const target = event.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) {
+        return;
+      }
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        handleVote(VOTE_JA);
+      } else if (event.key === "ArrowDown") {
+        event.preventDefault();
+        handleVote(VOTE_NEJ);
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        handleVote(VOTE_MAASKE);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [handleVote]);
 
   if (loading) {
     return (
       <div className="flex min-h-[80vh] items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl animate-bounce">🗳️</div>
+          <div className="animate-bounce text-4xl">🗳️</div>
           <p className="mt-2 text-gray-500">Indlæser madmuligheder...</p>
         </div>
       </div>
@@ -92,7 +140,7 @@ export default function Stemme({ room, participant, onRoomUpdate }: StemmeProps)
         <div className="mt-4 animate-pulse text-2xl">⏳</div>
 
         {participant.is_host && (
-          <button
+          <Button
             onClick={async () => {
               await updateRoomStatus(room.id, "results");
               const channel = createRoomChannel(room.code);
@@ -102,10 +150,10 @@ export default function Stemme({ room, participant, onRoomUpdate }: StemmeProps)
               });
               onRoomUpdate({ ...room, status: "results" });
             }}
-            className="btn-primary mt-4"
+            className="mt-4"
           >
             📊 Vis resultater nu
-          </button>
+          </Button>
         )}
       </div>
     );
@@ -115,63 +163,54 @@ export default function Stemme({ room, participant, onRoomUpdate }: StemmeProps)
 
   return (
     <div className="flex min-h-[80vh] flex-col justify-between gap-6 py-4">
-      <div className="text-center">
-        <div className="flex items-center justify-between px-2">
-          <span className="text-sm text-gray-500">
-            {currentIndex + 1} / {options.length}
-          </span>
-          <div className="h-2 flex-1 mx-4 rounded-full bg-gray-200">
-            <div
-              className="h-2 rounded-full bg-brand-500 transition-all duration-300"
-              style={{
-                width: `${((currentIndex) / options.length) * 100}%`,
-              }}
+      <VoteProgress current={currentIndex} total={options.length} />
+
+      <div className="relative flex-1">
+        <AnimatePresence mode="popLayout" initial={false}>
+          {currentOption && (
+            <VoteCard
+              key={currentOption.id}
+              option={currentOption}
+              exitDirection={exitDirection}
             />
-          </div>
-        </div>
+          )}
+        </AnimatePresence>
       </div>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentOption.id}
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -50 }}
-          transition={{ duration: 0.2 }}
-          className="card text-center py-12"
-        >
-          <div className="text-6xl mb-4">{currentOption.emoji || "🍽️"}</div>
-          <h2 className="text-2xl font-bold text-gray-900">
-            {currentOption.name}
-          </h2>
-          {currentOption.description && (
-            <p className="mt-2 text-gray-500">{currentOption.description}</p>
-          )}
-        </motion.div>
-      </AnimatePresence>
-
       <div className="flex flex-col gap-3">
-        <button
+        <Button
           onClick={() => handleVote(VOTE_JA)}
           disabled={submitting}
-          className="btn-vote-yes w-full"
+          variant="vote-yes"
+          size="lg"
+          fullWidth
+          aria-keyshortcuts="ArrowUp"
         >
           👍 Ja!
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => handleVote(VOTE_MAASKE)}
           disabled={submitting}
-          className="btn-vote-maybe w-full"
+          variant="vote-maybe"
+          size="lg"
+          fullWidth
+          aria-keyshortcuts="ArrowRight"
         >
           🤷 Måske
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => handleVote(VOTE_NEJ)}
           disabled={submitting}
-          className="btn-vote-no w-full"
+          variant="vote-no"
+          size="lg"
+          fullWidth
+          aria-keyshortcuts="ArrowDown"
         >
           👎 Nej tak
-        </button>
+        </Button>
+        <p className="text-center text-xs text-gray-400">
+          Tip: brug piletasterne ↑ ↓ → for at stemme hurtigt
+        </p>
       </div>
     </div>
   );
