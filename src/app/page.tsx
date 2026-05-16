@@ -77,6 +77,18 @@ export default function Home() {
       <p className="text-center text-sm text-gray-400">
         Ingen login. Ingen data. Bare mad. 🍽️
       </p>
+
+      <footer className="mt-8 text-center text-xs text-gray-300">
+        Lavet med ❤️ af{" "}
+        <a
+          href="https://www.WeGoDigital.dk"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-gray-400 hover:text-brand-500 transition-colors"
+        >
+          WeGoDigital
+        </a>
+      </footer>
     </div>
   );
 }
