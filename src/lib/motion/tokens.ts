@@ -32,7 +32,7 @@ export const STAGGER = {
   list: 0.05,
 } as const;
 
-export const CURSOR_COLORS = [
+export const WHEEL_COLORS = [
   "#f9a825",
   "#22c55e",
   "#f59e0b",

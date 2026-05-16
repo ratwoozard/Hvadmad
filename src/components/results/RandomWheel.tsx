@@ -3,7 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { animate, motion, useMotionValue } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { CURSOR_COLORS, DURATION } from "@/lib/motion/tokens";
+import { DURATION, WHEEL_COLORS } from "@/lib/motion/tokens";
 
 export interface WheelOption {
   id: string;
@@ -62,7 +62,7 @@ export function RandomWheel({
       const start = i * sliceAngle;
       const end = start + sliceAngle;
       const mid = start + sliceAngle / 2;
-      const color = CURSOR_COLORS[i % CURSOR_COLORS.length];
+      const color = WHEEL_COLORS[i % WHEEL_COLORS.length];
       const labelPos = polarToCartesian(CENTER, CENTER, RADIUS * 0.65, mid);
       return {
         d: describeSlice(start, end),

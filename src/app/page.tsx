@@ -2,20 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { EASING, DURATION } from "@/lib/motion/tokens";
-
-const CursorFollower = dynamic(
-  () => import("@/components/ui/effects/CursorFollower").then((m) => m.CursorFollower),
-  { ssr: false },
-);
-
-const CURSOR_EFFECT_ENABLED =
-  process.env.NEXT_PUBLIC_ENABLE_CURSOR_EFFECT !== "false";
 
 const HOME_SHELL_CLASS =
   "relative flex min-h-[80vh] w-full flex-col items-center justify-center overflow-hidden rounded-[2rem] px-4 py-10";
@@ -141,15 +132,6 @@ export default function Home() {
       </p>
     </div>
   );
-
-  if (CURSOR_EFFECT_ENABLED) {
-    return (
-      <CursorFollower className={HOME_SHELL_CLASS}>
-        {background}
-        {content}
-      </CursorFollower>
-    );
-  }
 
   return (
     <div className={HOME_SHELL_CLASS}>

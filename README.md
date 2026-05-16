@@ -32,15 +32,15 @@ ANALYZE=true npm run build         # next-bundle-analyzer rapport
 Projektet følger spec-kit: hver feature har sin egen spec, plan, tasks. Se `specs/`:
 
 - `001-hvadmad-mvp/` — kerneflowet (rum, voting, results)
-- `002-ui-polish-animations/` — polish, cursor-effekt på forside, animationer
+- `002-ui-polish-animations/` — polish, animationer og delt footer
 - `003-avatars-hats-attribution/` — avatar-system + vote attribution
 
 Konstitution i `.specify/memory/constitution.md`. Workflow-skills i `.cursor/skills/speckit-*/`.
 
 ## Design system
 
-- **Komponent-primitiver** (`src/components/ui/`): `<Button>`, `<Input>`, `<Card>`, `<Footer>`, `<PageTransition>`, `<CursorFollower>`. Brug ALTID disse i stedet for at lave nye knapper/inputs fra bunden.
-- **Motion-tokens** (`src/lib/motion/tokens.ts`): `DURATION`, `EASING`, `SPRING`, `STAGGER`, `CURSOR_COLORS`. Importér disse i stedet for inline magic-numbers.
+- **Komponent-primitiver** (`src/components/ui/`): `<Button>`, `<Input>`, `<Card>`, `<Footer>`, `<PageTransition>`. Brug ALTID disse i stedet for at lave nye knapper/inputs fra bunden.
+- **Motion-tokens** (`src/lib/motion/tokens.ts`): `DURATION`, `EASING`, `SPRING`, `STAGGER`, `WHEEL_COLORS`. Importér disse i stedet for inline magic-numbers.
 - **Variants** (`src/lib/motion/variants.ts`): genbrugelige Framer Motion variants (`pageTransition`, `fadeUp`, `voteCardExit*`, `resultStagger`).
 - **Reduced motion**: alle dekorative animationer respekterer `prefers-reduced-motion` via `<MotionProvider reducedMotion="user">` + custom `useReducedMotion()`-hook.
 - **Avatar-system** (`src/components/avatar/`, `src/lib/avatars/`): emoji-baseret katalog (16 avatars + 16 hatte i 4 slots), slot-konflikt-resolution, vote attribution på resultat-side.

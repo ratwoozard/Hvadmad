@@ -9,15 +9,6 @@ test.describe("ARIA & landmarks (US5 — 002 + 003)", () => {
     expect(await skip.count()).toBe(1);
   });
 
-  test("cursor SVG is marked aria-hidden so screen readers ignore it", async ({
-    page,
-  }) => {
-    await page.goto("/");
-    await page.waitForLoadState("networkidle");
-    const svgs = page.locator('svg[aria-hidden="true"]');
-    expect(await svgs.count()).toBeGreaterThanOrEqual(1);
-  });
-
   test("opret character picker exposes radiogroup ARIA", async ({
     page,
   }) => {
