@@ -2,6 +2,20 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Card } from "@/components/ui/Card";
+import { EASING, DURATION } from "@/lib/motion/tokens";
+
+const CursorFollower = dynamic(
+  () => import("@/components/ui/effects/CursorFollower").then((m) => m.CursorFollower),
+  { ssr: false },
+);
+
+const CURSOR_EFFECT_ENABLED =
+  process.env.NEXT_PUBLIC_ENABLE_CURSOR_EFFECT !== "false";
 
 export default function Home() {
   const router = useRouter();
@@ -16,78 +30,112 @@ export default function Home() {
     }
   };
 
-  return (
-    <div className="flex min-h-[80vh] flex-col items-center justify-center gap-8">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900">
-          🍕 HvadMad
-        </h1>
+  const content = (
+    <>
+      <motion.div
+        className="text-center"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: DURATION.base, ease: EASING.out }}
+      >
+        <h1 className="text-4xl font-bold text-gray-900">🍕 HvadMad</h1>
         <p className="mt-2 text-lg text-gray-600">
           Hvad skal vi spise? Stem sammen!
         </p>
-      </div>
+      </motion.div>
 
       <div className="flex w-full flex-col gap-4">
-        <button
+        <Button
           onClick={() => router.push("/opret")}
-          className="btn-primary w-full text-lg"
+          size="lg"
+          fullWidth
         >
           🎉 Opret madrum
-        </button>
+        </Button>
 
-        {!showJoin ? (
-          <button
-            onClick={() => setShowJoin(true)}
-            className="btn-secondary w-full text-lg"
-          >
-            🔗 Join et rum
-          </button>
-        ) : (
-          <form onSubmit={handleJoin} className="card animate-slide-up">
-            <label
-              htmlFor="join-code"
-              className="mb-2 block text-sm font-medium text-gray-700"
+        <Button
+          onClick={() => router.push("/solo")}
+          variant="secondary"
+          size="lg"
+          fullWidth
+        >
+          🧑 Spil solo
+        </Button>
+
+        <AnimatePresence mode="wait" initial={false}>
+          {!showJoin ? (
+            <motion.div
+              key="join-button"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: DURATION.fast }}
             >
-              Indtast rumkode
-            </label>
-            <div className="flex gap-2">
-              <input
-                id="join-code"
-                type="text"
-                value={joinCode}
-                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                placeholder="F.eks. ABCD5"
-                className="input-field flex-1 text-center text-2xl uppercase tracking-widest"
-                maxLength={6}
-                autoFocus
-                autoComplete="off"
-              />
-              <button
-                type="submit"
-                disabled={joinCode.trim().length < 4}
-                className="btn-primary disabled:opacity-50"
+              <Button
+                onClick={() => setShowJoin(true)}
+                variant="secondary"
+                size="lg"
+                fullWidth
               >
-                Gå
-              </button>
-            </div>
-          </form>
-        )}
+                🔗 Join et rum
+              </Button>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="join-form"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: DURATION.base, ease: EASING.out }}
+            >
+              <Card>
+                <form onSubmit={handleJoin}>
+                  <Input
+                    id="join-code"
+                    label="Indtast rumkode"
+                    value={joinCode}
+                    onChange={(e) =>
+                      setJoinCode(e.target.value.toUpperCase())
+                    }
+                    placeholder="F.eks. ABCD5"
+                    className="text-center text-2xl uppercase tracking-widest"
+                    maxLength={6}
+                    autoFocus
+                    autoComplete="off"
+                  />
+                  <div className="mt-4 flex gap-2">
+                    <Button
+                      type="submit"
+                      disabled={joinCode.trim().length < 4}
+                      fullWidth
+                    >
+                      Gå
+                    </Button>
+                  </div>
+                </form>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <p className="text-center text-sm text-gray-400">
         Ingen login. Ingen data. Bare mad. 🍽️
       </p>
+    </>
+  );
 
-      <footer className="mt-12 text-center text-[11px] text-gray-300">
-        <a
-          href="https://www.WeGoDigital.dk"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:text-gray-400 transition-colors"
-        >
-          WeGoDigital.dk
-        </a>
-      </footer>
+  if (CURSOR_EFFECT_ENABLED) {
+    return (
+      <CursorFollower className="flex min-h-[80vh] w-full flex-col items-center justify-center gap-8">
+        {content}
+      </CursorFollower>
+    );
+  }
+
+  return (
+    <div className="flex min-h-[80vh] w-full flex-col items-center justify-center gap-8">
+      {content}
     </div>
   );
 }
