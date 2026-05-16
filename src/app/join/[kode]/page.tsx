@@ -8,6 +8,10 @@ import { joinRoom, getParticipantBySession } from "@/lib/supabase/queries";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
+import { AvatarPicker } from "@/components/avatar/AvatarPicker";
+import { Avatar } from "@/components/avatar/Avatar";
+import type { AvatarConfiguration } from "@/types/avatar";
+import { EMPTY_CONFIG, pickRandomDefault } from "@/lib/avatars/default";
 
 export default function JoinPage() {
   const params = useParams();
@@ -19,6 +23,8 @@ export default function JoinPage() {
   const [error, setError] = useState("");
   const [checking, setChecking] = useState(true);
   const [roomReady, setRoomReady] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [config, setConfig] = useState<AvatarConfiguration>(EMPTY_CONFIG);
 
   useEffect(() => {
     async function checkRoom() {
@@ -59,14 +65,7 @@ export default function JoinPage() {
     checkRoom();
   }, [kode, router]);
 
-  const handleJoin = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (nickname.trim().length < 2) {
-      setError("Nickname skal være mindst 2 tegn");
-      return;
-    }
-
+  const finalize = async (chosen: AvatarConfiguration) => {
     setIsJoining(true);
     setError("");
 
@@ -94,7 +93,8 @@ export default function JoinPage() {
         return;
       }
 
-      await joinRoom(room.id, sessionId, nickname.trim(), false);
+      const finalConfig = chosen.avatar_id ? chosen : pickRandomDefault();
+      await joinRoom(room.id, sessionId, nickname.trim(), false, finalConfig);
       router.push(`/rum/${room.code}`);
     } catch (e: unknown) {
       const message =
@@ -102,6 +102,22 @@ export default function JoinPage() {
       setError(message);
       setIsJoining(false);
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (nickname.trim().length < 2) {
+      setError("Nickname skal være mindst 2 tegn");
+      return;
+    }
+    setError("");
+    setPickerOpen(true);
+  };
+
+  const handleSave = (chosen: AvatarConfiguration) => {
+    setConfig(chosen);
+    setPickerOpen(false);
+    void finalize(chosen);
   };
 
   if (checking) {
@@ -137,7 +153,7 @@ export default function JoinPage() {
       </div>
 
       <Card className="w-full">
-        <form onSubmit={handleJoin}>
+        <form onSubmit={handleSubmit}>
           <Input
             id="nickname"
             label="Vælg et nickname"
@@ -150,6 +166,22 @@ export default function JoinPage() {
             error={error || undefined}
           />
 
+          {config.avatar_id && (
+            <div className="mt-4 flex items-center gap-3 rounded-xl bg-brand-50 p-3">
+              <Avatar config={config} size="md" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-800">Din avatar er klar</p>
+                <button
+                  type="button"
+                  onClick={() => setPickerOpen(true)}
+                  className="text-xs text-brand-600 underline-offset-2 hover:underline"
+                >
+                  Skift avatar
+                </button>
+              </div>
+            </div>
+          )}
+
           <Button
             type="submit"
             disabled={nickname.trim().length < 2 || isJoining}
@@ -158,10 +190,18 @@ export default function JoinPage() {
             fullWidth
             className="mt-4"
           >
-            {isJoining ? "Joiner..." : "🎉 Join rum"}
+            {isJoining ? "Joiner..." : "🎨 Vælg avatar & join"}
           </Button>
         </form>
       </Card>
+
+      <AvatarPicker
+        open={pickerOpen}
+        initialConfig={config}
+        onSave={handleSave}
+        onCancel={() => setPickerOpen(false)}
+        saveLabel="Join rum"
+      />
     </div>
   );
 }

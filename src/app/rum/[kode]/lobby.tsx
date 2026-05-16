@@ -8,6 +8,7 @@ import {
   updateRoomStatus,
   getFoodOptionsByCategory,
   setRoomFoodOptions,
+  updateParticipantAvatar,
 } from "@/lib/supabase/queries";
 import { supabase } from "@/lib/supabase/client";
 import { selectRandomOptions } from "@/lib/food/selection";
@@ -16,6 +17,9 @@ import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { cn, FOCUS_RING } from "@/components/ui/FocusRing";
 import { fadeUp } from "@/lib/motion/variants";
+import { AvatarBadge } from "@/components/avatar/AvatarBadge";
+import { AvatarPicker } from "@/components/avatar/AvatarPicker";
+import type { AvatarConfiguration } from "@/types/avatar";
 
 const CATEGORIES: VotingCategory[] = [
   "hjemmelavet",
@@ -46,6 +50,7 @@ export default function Lobby({
   participant,
   participants,
   onRoomUpdate,
+  onParticipantsUpdate,
 }: LobbyProps) {
   const [voteMode, setVoteMode] = useState<VoteMode | null>(null);
   const [selectedCategory, setSelectedCategory] =
@@ -53,6 +58,22 @@ export default function Lobby({
   const [customDishes, setCustomDishes] = useState<string[]>([""]);
   const [isStarting, setIsStarting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [avatarEditOpen, setAvatarEditOpen] = useState(false);
+
+  const handleAvatarSave = async (config: AvatarConfiguration) => {
+    setAvatarEditOpen(false);
+    const updated = participants.map((p) =>
+      p.id === participant.id
+        ? { ...p, avatar_id: config.avatar_id, hat_ids: config.hat_ids }
+        : p,
+    );
+    onParticipantsUpdate(updated);
+    try {
+      await updateParticipantAvatar(participant.id, config);
+    } catch {
+      onParticipantsUpdate(participants);
+    }
+  };
 
   const isHost = participant.is_host;
   const shareUrl =
@@ -176,10 +197,23 @@ export default function Lobby({
       </div>
 
       <Card>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">
-          Deltagere ({participants.length})
-        </h2>
-        <ul className="flex flex-wrap gap-2" aria-live="polite">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+            Deltagere ({participants.length})
+          </h2>
+          {room.status === "lobby" && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setAvatarEditOpen(true)}
+              className="!min-h-0 !min-w-0 px-2 py-1 text-xs"
+            >
+              ✏️ Skift avatar
+            </Button>
+          )}
+        </div>
+        <ul className="flex flex-wrap gap-3" aria-live="polite">
           <AnimatePresence initial={false}>
             {participants.map((p) => (
               <motion.li
@@ -189,15 +223,13 @@ export default function Lobby({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                className={cn(
-                  "inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium",
-                  p.is_host
-                    ? "bg-brand-100 text-brand-800"
-                    : "bg-gray-100 text-gray-700",
-                )}
               >
-                {p.is_host && "👑 "}
-                {p.nickname}
+                <AvatarBadge
+                  participant={p}
+                  size="sm"
+                  isYou={p.id === participant.id}
+                  showName
+                />
               </motion.li>
             ))}
           </AnimatePresence>
@@ -399,6 +431,18 @@ export default function Lobby({
           <div className="mt-2 animate-pulse text-2xl">⏳</div>
         </Card>
       )}
+
+      <AvatarPicker
+        open={avatarEditOpen}
+        initialConfig={{
+          avatar_id: participant.avatar_id ?? null,
+          hat_ids: participant.hat_ids ?? [],
+        }}
+        onSave={handleAvatarSave}
+        onCancel={() => setAvatarEditOpen(false)}
+        allowSkip={false}
+        saveLabel="Gem"
+      />
     </div>
   );
 }

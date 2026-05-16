@@ -36,6 +36,8 @@ export interface Participant {
   joined_at: string;
   last_seen: string;
   has_voted: boolean;
+  avatar_id: string | null;
+  hat_ids: string[];
 }
 
 export interface RoomWithParticipants extends Room {

@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { VoteCard, type VoteDirection } from "@/components/voting/VoteCard";
 import { VoteProgress } from "@/components/voting/VoteProgress";
+import { Avatar } from "@/components/avatar/Avatar";
 
 interface StemmeProps {
   room: Room;
@@ -163,7 +164,24 @@ export default function Stemme({ room, participant, onRoomUpdate }: StemmeProps)
 
   return (
     <div className="flex min-h-[80vh] flex-col justify-between gap-6 py-4">
-      <VoteProgress current={currentIndex} total={options.length} />
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <Avatar
+            config={{
+              avatar_id: participant.avatar_id ?? null,
+              hat_ids: participant.hat_ids ?? [],
+            }}
+            size="sm"
+          />
+          <span>
+            Du stemmer som{" "}
+            <span className="font-medium text-gray-900">
+              {participant.nickname}
+            </span>
+          </span>
+        </div>
+        <VoteProgress current={currentIndex} total={options.length} />
+      </div>
 
       <div className="relative flex-1">
         <AnimatePresence mode="popLayout" initial={false}>

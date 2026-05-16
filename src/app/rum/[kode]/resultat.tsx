@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import type { Room, Participant } from "@/types/room";
-import type { MatchResult } from "@/types/voting";
+import type { MatchResult, Vote } from "@/types/voting";
 import {
   getVotesForRoom,
   getRoomFoodOptions,
@@ -14,11 +14,19 @@ import {
   getTopResults,
   hasAnyValidResult,
 } from "@/lib/match/algorithm";
-import { resultStagger } from "@/lib/motion/variants";
+import { resultStagger, fadeUp } from "@/lib/motion/variants";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ResultRow } from "@/components/results/ResultRow";
 import { RandomWheel, type WheelOption } from "@/components/results/RandomWheel";
+import {
+  VoteAttribution,
+} from "@/components/avatar/VoteAttribution";
+import {
+  groupVotesByOption,
+  EMPTY_GROUP,
+} from "@/lib/avatars/attribution";
+import { getSessionId } from "@/lib/session";
 
 interface ResultatProps {
   room: Room;
@@ -27,28 +35,39 @@ interface ResultatProps {
 
 export default function Resultat({ room }: ResultatProps) {
   const [results, setResults] = useState<MatchResult[]>([]);
+  const [votes, setVotes] = useState<Vote[]>([]);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [wheelOpen, setWheelOpen] = useState(false);
 
   useEffect(() => {
     async function loadResults() {
-      const [votes, foodOptions, participants] = await Promise.all([
+      const [allVotes, foodOptions, allParticipants] = await Promise.all([
         getVotesForRoom(room.id),
         getRoomFoodOptions(room.id),
         getParticipants(room.id),
       ]);
 
       const calculated = calculateResults(
-        votes,
+        allVotes,
         foodOptions,
-        participants.length,
+        allParticipants.length,
       );
       const top = getTopResults(calculated, 5);
       setResults(top);
+      setVotes(allVotes);
+      setParticipants(allParticipants);
       setLoading(false);
     }
     loadResults();
   }, [room.id]);
+
+  const attribution = useMemo(
+    () => groupVotesByOption(votes, participants),
+    [votes, participants],
+  );
+
+  const sessionId = typeof window !== "undefined" ? getSessionId() : undefined;
 
   if (loading) {
     return (
@@ -100,19 +119,27 @@ export default function Resultat({ room }: ResultatProps) {
         variants={resultStagger}
         initial="initial"
         animate="animate"
-        className="flex flex-col gap-3"
+        className="flex flex-col gap-4"
       >
-        {results.map((result, index) => (
-          <ResultRow
-            key={result.food_option_id}
-            rank={index + 1}
-            name={result.name}
-            emoji={result.emoji}
-            matchPercent={result.match_percentage}
-            explanation={result.explanation}
-            isTop={index === 0}
-          />
-        ))}
+        {results.map((result, index) => {
+          const group = attribution.get(result.food_option_id) ?? EMPTY_GROUP;
+          return (
+            <motion.div key={result.food_option_id} variants={fadeUp}>
+              <ResultRow
+                rank={index + 1}
+                name={result.name}
+                emoji={result.emoji}
+                matchPercent={result.match_percentage}
+                explanation={result.explanation}
+                isTop={index === 0}
+              />
+              <VoteAttribution
+                group={group}
+                currentSessionId={sessionId}
+              />
+            </motion.div>
+          );
+        })}
       </motion.div>
 
       <Card className="text-center">
@@ -129,9 +156,7 @@ export default function Resultat({ room }: ResultatProps) {
           <RandomWheel
             key={wheelOptions.map((o) => o.id).join("-")}
             options={wheelOptions}
-            onResult={() => {
-              // Result already rendered inside RandomWheel via aria-live.
-            }}
+            onResult={() => {}}
           />
         )}
         {wheelOpen && (

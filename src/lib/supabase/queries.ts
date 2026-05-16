@@ -2,6 +2,7 @@ import { supabase } from "./client";
 import type { Room, Participant, RoomStatus, VotingCategory } from "@/types/room";
 import type { Vote, VoteValue } from "@/types/voting";
 import type { FoodOption } from "@/types/food";
+import type { AvatarConfiguration } from "@/types/avatar";
 
 export async function createRoom(
   code: string,
@@ -58,21 +59,44 @@ export async function joinRoom(
   roomId: string,
   sessionId: string,
   nickname: string,
-  isHost: boolean = false
+  isHost: boolean = false,
+  avatar: AvatarConfiguration | null = null,
 ): Promise<Participant> {
+  const insertRow: Record<string, unknown> = {
+    room_id: roomId,
+    session_id: sessionId,
+    nickname,
+    is_host: isHost,
+  };
+  if (avatar) {
+    insertRow.avatar_id = avatar.avatar_id;
+    insertRow.hat_ids = avatar.hat_ids;
+  }
+
   const { data, error } = await supabase
     .from("participants")
-    .insert({
-      room_id: roomId,
-      session_id: sessionId,
-      nickname,
-      is_host: isHost,
-    })
+    .insert(insertRow)
     .select()
     .single();
 
   if (error) throw new Error(`Kunne ikke joine rum: ${error.message}`);
   return data;
+}
+
+export async function updateParticipantAvatar(
+  participantId: string,
+  avatar: AvatarConfiguration,
+): Promise<void> {
+  const { error } = await supabase
+    .from("participants")
+    .update({
+      avatar_id: avatar.avatar_id,
+      hat_ids: avatar.hat_ids,
+    })
+    .eq("id", participantId);
+
+  if (error)
+    throw new Error(`Kunne ikke opdatere avatar: ${error.message}`);
 }
 
 export async function getParticipants(roomId: string): Promise<Participant[]> {
