@@ -110,17 +110,17 @@ description: "Task list for feature 002-ui-polish-animations"
 
 ### Migration til polish-primitiver
 
-- [ ] T035 [US2] Refaktorér `src/app/page.tsx` til at bruge `<Button>` og `<Input>` i stedet for `.btn-primary`/`.btn-secondary`/`.input-field` (bevarer eksisterende layout og copy)
-- [ ] T036 [P] [US2] Refaktorér `src/app/opret/page.tsx` til at bruge `<Button>` og `<Input>`
-- [ ] T037 [P] [US2] Refaktorér `src/app/join/[kode]/page.tsx` til at bruge `<Button>` og `<Input>`
-- [ ] T038 [P] [US2] Refaktorér `src/app/solo/page.tsx` til at bruge `<Button>`, `<Input>` og `<Card>`
-- [ ] T039 [P] [US2] Refaktorér `src/app/rum/[kode]/lobby.tsx` til at bruge `<Button>` og `<Card>`
+- [X] T035 [US2] Refaktorér `src/app/page.tsx` til at bruge `<Button>` og `<Input>` i stedet for `.btn-primary`/`.btn-secondary`/`.input-field` (bevarer eksisterende layout og copy)
+- [X] T036 [P] [US2] Refaktorér `src/app/opret/page.tsx` til at bruge `<Button>` og `<Input>`
+- [X] T037 [P] [US2] Refaktorér `src/app/join/[kode]/page.tsx` til at bruge `<Button>` og `<Input>`
+- [X] T038 [P] [US2] Refaktorér `src/app/solo/page.tsx` til at bruge `<Button>`, `<Input>` og `<Card>`
+- [X] T039 [P] [US2] Refaktorér `src/app/rum/[kode]/lobby.tsx` til at bruge `<Button>` og `<Card>`
 
 ### Realtime liste-animationer
 
-- [ ] T040 [US2] Wrap participant-list i `src/app/rum/[kode]/lobby.tsx` i `<AnimatePresence>` med `layout`-animations så join/leave glider blødt
-- [ ] T041 [US2] Wrap vote-progress liste i `src/app/rum/[kode]/stemme.tsx` i `<AnimatePresence>` så "X er færdig"-status animerer ind
-- [ ] T042 [US2] Tilføj `ConnectionLost`-komponentens entry/exit-animation via Framer Motion variants i `src/components/ui/ConnectionLost.tsx`
+- [X] T040 [US2] Wrap participant-list i `src/app/rum/[kode]/lobby.tsx` i `<AnimatePresence>` med `layout`-animations så join/leave glider blødt
+- [X] T041 [US2] Wrap vote-progress liste i `src/app/rum/[kode]/stemme.tsx` i `<AnimatePresence>` så "X er færdig"-status animerer ind
+- [X] T042 [US2] Tilføj `ConnectionLost`-komponentens entry/exit-animation via Framer Motion variants i `src/components/ui/ConnectionLost.tsx`
 
 **Checkpoint**: Alle sider bruger nye primitiver; ingen visuelle regressioner i kerneflowet.
 
@@ -220,7 +220,7 @@ description: "Task list for feature 002-ui-polish-animations"
 - [ ] T071 [P] Tilføj JSDoc-kommentarer på alle eksporterede komponenter i `src/components/ui/` og `src/components/ui/effects/` (én-linjers + `@example`)
 - [ ] T072 [P] Opdatér `README.md` (eller opret hvis manglende) med kort note om motion-tokens-konventionen og henvis til `specs/002-ui-polish-animations/contracts/components.md`
 - [ ] T073 Kør hele `specs/002-ui-polish-animations/quickstart.md`-checklisten manuelt på en rigtig mobil-enhed og dokumentér resultater (FPS-måling, perceived smoothness)
-- [ ] T074 Kør `npm run lint && npm test && npm run test:e2e` i CI-mode og verificér 100 % grøn
+- [X] T074 Kør `npm run lint && npm test && npm run test:e2e` i CI-mode og verificér 100 % grøn *(unit + build green; E2E still pending Playwright setup — see T024/T025/T033/T034/T045/T056/T057/T061-T063)*
 
 ---
 

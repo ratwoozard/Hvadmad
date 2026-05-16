@@ -5,6 +5,9 @@ import { useParams, useRouter } from "next/navigation";
 import { getSessionId } from "@/lib/session";
 import { supabase } from "@/lib/supabase/client";
 import { joinRoom, getParticipantBySession } from "@/lib/supabase/queries";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Card } from "@/components/ui/Card";
 
 export default function JoinPage() {
   const params = useParams();
@@ -32,7 +35,7 @@ export default function JoinPage() {
 
       if (!room) {
         setError(
-          "Rummet findes ikke eller er udløbet. Tjek koden og prøv igen."
+          "Rummet findes ikke eller er udløbet. Tjek koden og prøv igen.",
         );
         setChecking(false);
         return;
@@ -93,8 +96,10 @@ export default function JoinPage() {
 
       await joinRoom(room.id, sessionId, nickname.trim(), false);
       router.push(`/rum/${room.code}`);
-    } catch (e: any) {
-      setError(e.message || "Kunne ikke joine rummet. Prøv igen.");
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error ? e.message : "Kunne ikke joine rummet. Prøv igen.";
+      setError(message);
       setIsJoining(false);
     }
   };
@@ -103,7 +108,7 @@ export default function JoinPage() {
     return (
       <div className="flex min-h-[80vh] items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl animate-bounce">🔍</div>
+          <div className="animate-bounce text-4xl">🔍</div>
           <p className="mt-2 text-gray-500">Finder rum...</p>
         </div>
       </div>
@@ -115,9 +120,9 @@ export default function JoinPage() {
       <div className="flex min-h-[80vh] flex-col items-center justify-center gap-4">
         <div className="text-4xl">😕</div>
         <p className="text-center text-gray-600">{error}</p>
-        <a href="/" className="btn-secondary">
+        <Button as="a" href="/" variant="secondary">
           Gå til forsiden
-        </a>
+        </Button>
       </div>
     );
   }
@@ -131,35 +136,32 @@ export default function JoinPage() {
         </p>
       </div>
 
-      <form onSubmit={handleJoin} className="card w-full">
-        <label
-          htmlFor="nickname"
-          className="mb-2 block text-sm font-medium text-gray-700"
-        >
-          Vælg et nickname
-        </label>
-        <input
-          id="nickname"
-          type="text"
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
-          placeholder="F.eks. Maria"
-          className="input-field"
-          maxLength={20}
-          autoFocus
-          autoComplete="off"
-        />
+      <Card className="w-full">
+        <form onSubmit={handleJoin}>
+          <Input
+            id="nickname"
+            label="Vælg et nickname"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            placeholder="F.eks. Maria"
+            maxLength={20}
+            autoFocus
+            autoComplete="off"
+            error={error || undefined}
+          />
 
-        {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
-
-        <button
-          type="submit"
-          disabled={nickname.trim().length < 2 || isJoining}
-          className="btn-primary mt-4 w-full text-lg disabled:opacity-50"
-        >
-          {isJoining ? "Joiner..." : "🎉 Join rum"}
-        </button>
-      </form>
+          <Button
+            type="submit"
+            disabled={nickname.trim().length < 2 || isJoining}
+            loading={isJoining}
+            size="lg"
+            fullWidth
+            className="mt-4"
+          >
+            {isJoining ? "Joiner..." : "🎉 Join rum"}
+          </Button>
+        </form>
+      </Card>
     </div>
   );
 }

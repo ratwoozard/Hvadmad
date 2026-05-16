@@ -5,19 +5,9 @@ import { useRouter } from "next/navigation";
 import { generateRoomCode } from "@/lib/room/codes";
 import { getSessionId } from "@/lib/session";
 import { createRoom, joinRoom } from "@/lib/supabase/queries";
-import {
-  CATEGORY_LABELS,
-  CATEGORY_EMOJIS,
-  type VotingCategory,
-} from "@/types/room";
-
-const CATEGORIES: VotingCategory[] = [
-  "hjemmelavet",
-  "takeaway",
-  "restaurant",
-  "koekkentype",
-  "hurtig",
-];
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Card } from "@/components/ui/Card";
 
 export default function OpretPage() {
   const router = useRouter();
@@ -42,20 +32,24 @@ export default function OpretPage() {
       await joinRoom(room.id, sessionId, nickname.trim(), true);
 
       router.push(`/rum/${room.code}`);
-    } catch (e: any) {
-      setError(e.message || "Noget gik galt. Prøv igen.");
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error ? e.message : "Noget gik galt. Prøv igen.";
+      setError(message);
       setIsCreating(false);
     }
   };
 
   return (
     <div className="flex min-h-[80vh] flex-col gap-6">
-      <button
+      <Button
         onClick={() => router.back()}
-        className="self-start text-sm text-gray-500 hover:text-gray-700"
+        variant="ghost"
+        size="sm"
+        className="self-start"
       >
         ← Tilbage
-      </button>
+      </Button>
 
       <div className="text-center">
         <h1 className="text-2xl font-bold text-gray-900">Opret madrum</h1>
@@ -64,37 +58,29 @@ export default function OpretPage() {
         </p>
       </div>
 
-      <div className="card">
-        <label
-          htmlFor="nickname"
-          className="mb-2 block text-sm font-medium text-gray-700"
-        >
-          Dit nickname
-        </label>
-        <input
+      <Card>
+        <Input
           id="nickname"
-          type="text"
+          label="Dit nickname"
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
           placeholder="F.eks. Christian"
-          className="input-field"
           maxLength={20}
           autoFocus
           autoComplete="off"
+          error={error || undefined}
         />
-      </div>
+      </Card>
 
-      {error && (
-        <p className="text-center text-sm text-red-500">{error}</p>
-      )}
-
-      <button
+      <Button
         onClick={handleCreate}
         disabled={nickname.trim().length < 2 || isCreating}
-        className="btn-primary w-full text-lg disabled:opacity-50"
+        loading={isCreating}
+        size="lg"
+        fullWidth
       >
         {isCreating ? "Opretter..." : "🎉 Opret rum"}
-      </button>
+      </Button>
     </div>
   );
 }
