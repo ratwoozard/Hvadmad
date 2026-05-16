@@ -35,7 +35,7 @@ description: "Task list for feature 003-avatars-hats-attribution"
 
 - [X] T009 [P] Implementér `<Avatar config size altText? badge?>` i `src/components/avatar/Avatar.tsx`
 - [X] T010 [P] Implementér `<AvatarBadge participant size showName? showHostCrown? isYou?>` i `src/components/avatar/AvatarBadge.tsx`
-- [ ] T011 [P] Unit test for `<Avatar>` SR alt-text composition i `tests/unit/Avatar.test.tsx` *(deferred — composition is covered indirectly by integration via attribution.test.ts)*
+- [X] T011 [P] Unit test for `<Avatar>` SR alt-text composition i `tests/unit/Avatar.test.tsx` (7 tests covering placeholder, base emoji, composed aria-label, sizes, muted state, unknown id, custom altText)
 
 ---
 
@@ -48,7 +48,7 @@ description: "Task list for feature 003-avatars-hats-attribution"
 - [X] T016 [US1] "Spring over"-knap → tildel default via `pickRandomDefault()` og luk picker
 - [X] T017 [US1] Integrér picker i `src/app/opret/page.tsx` (vises efter nickname-validering, før createRoom)
 - [X] T018 [US1] Integrér picker i `src/app/join/[kode]/page.tsx` (vises før joinRoom-kald)
-- [ ] T019 [US1] (Optional) Integrér picker i `src/app/solo/page.tsx` *(deferred — solo-mode er single-player, mindre relevant)*
+- [X] T019 [US1] (Optional) Integrér picker i `src/app/solo/page.tsx` med "Vælg avatar"-knap og live preview i toppen af setup-skærmen
 
 ---
 
@@ -57,7 +57,7 @@ description: "Task list for feature 003-avatars-hats-attribution"
 - [X] T020 [US2] Refaktorér participant-pills i `src/app/rum/[kode]/lobby.tsx` til at bruge `<AvatarBadge size="sm">` med avatar + nickname
 - [X] T021 [US2] Inaktive deltagere vises med dæmpet avatar (grayscale + opacity-50 via `<Avatar muted>`) i `<AvatarBadge>`
 - [X] T022 [US2] Vis bruger-egen avatar i toppen af `src/app/rum/[kode]/stemme.tsx` ("Du stemmer som ..."-bar)
-- [ ] T023 [US2] Hvis vote-progress-liste vises ("X har stemt ✓"), bruger `<AvatarBadge size="sm">` med checkmark badge *(deferred — voting page polling doesn't currently expose live "har stemt"-status per deltager)*
+- [X] T023 [US2] Vote-progress-liste i `stemme.tsx` viser alle deltageres avatars med vote-yes-checkmark badge for færdige deltagere; dim opacity for ikke-færdige; live opdateres via 2s polling fra parent `page.tsx`
 
 ---
 
@@ -113,6 +113,6 @@ description: "Task list for feature 003-avatars-hats-attribution"
 
 ## Status
 
-**32/35 tasks completed** (3 deferred — T011 dækket indirekte, T019 solo-integration optional, T023 venter på live-stemme-status).
+**35/35 tasks completed** (alle 5 user stories fuldt implementeret).
 
 **Build & tests**: alle grønne. Migration 008 skal køres mod Supabase før app virker fuldt (`npx supabase db reset` eller manuel SQL via dashboard).

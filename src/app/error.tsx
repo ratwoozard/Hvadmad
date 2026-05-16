@@ -1,7 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
+
 export default function Error({
-  error,
   reset,
 }: {
   error: Error & { digest?: string };
@@ -14,12 +15,12 @@ export default function Error({
       <p className="text-center text-gray-600">
         Der opstod en fejl. Prøv at genindlæse siden.
       </p>
-      <button onClick={reset} className="btn-primary mt-4">
+      <Button onClick={reset} className="mt-4">
         🔄 Prøv igen
-      </button>
-      <a href="/" className="btn-secondary">
+      </Button>
+      <Button as="a" href="/" variant="secondary">
         🏠 Gå til forsiden
-      </a>
+      </Button>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import type { Room, Participant } from "@/types/room";
 import type { FoodOption } from "@/types/food";
 import type { VoteValue } from "@/types/voting";
@@ -26,6 +26,7 @@ import { Avatar } from "@/components/avatar/Avatar";
 interface StemmeProps {
   room: Room;
   participant: Participant;
+  participants?: Participant[];
   onRoomUpdate: (room: Room) => void;
 }
 
@@ -35,7 +36,12 @@ function directionFor(value: VoteValue): VoteDirection {
   return "maaske";
 }
 
-export default function Stemme({ room, participant, onRoomUpdate }: StemmeProps) {
+export default function Stemme({
+  room,
+  participant,
+  participants = [],
+  onRoomUpdate,
+}: StemmeProps) {
   const [options, setOptions] = useState<FoodOption[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -181,6 +187,60 @@ export default function Stemme({ room, participant, onRoomUpdate }: StemmeProps)
           </span>
         </div>
         <VoteProgress current={currentIndex} total={options.length} />
+
+        {participants.length > 1 && (
+          <div
+            className="flex flex-wrap items-center gap-2 pt-1"
+            aria-label="Stemmestatus for gruppen"
+          >
+            <AnimatePresence initial={false}>
+              {participants.map((p) => (
+                <motion.div
+                  key={p.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.85 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.85 }}
+                  transition={{ duration: 0.2 }}
+                  title={
+                    p.has_voted
+                      ? `${p.nickname} er færdig`
+                      : `${p.nickname} stemmer stadig`
+                  }
+                  className={p.has_voted ? "" : "opacity-60"}
+                >
+                  <Avatar
+                    config={{
+                      avatar_id: p.avatar_id ?? null,
+                      hat_ids: p.hat_ids ?? [],
+                    }}
+                    size="sm"
+                    altText={
+                      p.has_voted
+                        ? `${p.nickname} har stemt`
+                        : `${p.nickname} stemmer`
+                    }
+                    className={
+                      p.id === participant.id
+                        ? "ring-2 ring-brand-500 ring-offset-1"
+                        : ""
+                    }
+                    badge={
+                      p.has_voted ? (
+                        <span
+                          className="rounded-full bg-vote-yes px-1 text-[10px] text-white"
+                          aria-hidden="true"
+                        >
+                          ✓
+                        </span>
+                      ) : undefined
+                    }
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
       <div className="relative flex-1">

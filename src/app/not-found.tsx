@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/Button";
+
 export default function NotFound() {
   return (
     <div className="flex min-h-[80vh] flex-col items-center justify-center gap-4">
@@ -6,9 +8,9 @@ export default function NotFound() {
       <p className="text-center text-gray-600">
         Den side du leder efter eksisterer ikke.
       </p>
-      <a href="/" className="btn-primary mt-4">
+      <Button as="a" href="/" className="mt-4">
         🏠 Gå til forsiden
-      </a>
+      </Button>
     </div>
   );
 }

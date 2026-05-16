@@ -129,7 +129,10 @@ export default function RumPage() {
       <div className="flex min-h-[80vh] flex-col items-center justify-center gap-4">
         <div className="text-4xl">😕</div>
         <p className="text-center text-gray-600">{error}</p>
-        <a href="/" className="btn-secondary">
+        <a
+          href="/"
+          className="inline-flex min-h-touch min-w-touch items-center justify-center rounded-xl border-2 border-brand-500 bg-white px-6 py-3 font-semibold text-brand-700 transition-colors hover:bg-brand-50"
+        >
           Gå til forsiden
         </a>
       </div>
@@ -158,6 +161,7 @@ export default function RumPage() {
         <Stemme
           room={room}
           participant={participant}
+          participants={participants}
           onRoomUpdate={(r) => {
             setRoom(r);
             roomRef.current = r;

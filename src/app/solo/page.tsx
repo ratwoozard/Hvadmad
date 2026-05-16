@@ -21,6 +21,10 @@ import { VoteCard, type VoteDirection } from "@/components/voting/VoteCard";
 import { VoteProgress } from "@/components/voting/VoteProgress";
 import { RandomWheel, type WheelOption } from "@/components/results/RandomWheel";
 import { resultStagger, fadeUp } from "@/lib/motion/variants";
+import { Avatar } from "@/components/avatar/Avatar";
+import { AvatarPicker } from "@/components/avatar/AvatarPicker";
+import type { AvatarConfiguration } from "@/types/avatar";
+import { EMPTY_CONFIG } from "@/lib/avatars/default";
 
 type Phase = "setup" | "voting" | "results";
 type VoteMode = "category" | "vote-category" | "custom";
@@ -67,6 +71,8 @@ export default function SoloPage() {
   const [exitDirection, setExitDirection] = useState<VoteDirection | null>(null);
 
   const [wheelOpen, setWheelOpen] = useState(false);
+  const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
+  const [avatarConfig, setAvatarConfig] = useState<AvatarConfiguration>(EMPTY_CONFIG);
 
   const addCustomDish = () => setCustomDishes([...customDishes, ""]);
   const updateCustomDish = (index: number, value: string) => {
@@ -197,6 +203,11 @@ export default function SoloPage() {
     setWheelOpen(false);
   };
 
+  const handleAvatarSave = (chosen: AvatarConfiguration) => {
+    setAvatarConfig(chosen);
+    setAvatarPickerOpen(false);
+  };
+
   if (phase === "setup") {
     return (
       <div className="flex min-h-[80vh] flex-col gap-6">
@@ -215,6 +226,24 @@ export default function SoloPage() {
             Stem alene og find ud af hvad du har lyst til
           </p>
         </div>
+
+        <Card className="flex items-center gap-3">
+          <Avatar config={avatarConfig} size="md" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-gray-800">
+              {avatarConfig.avatar_id
+                ? "Din avatar er klar"
+                : "Vælg evt. en avatar"}
+            </p>
+            <button
+              type="button"
+              onClick={() => setAvatarPickerOpen(true)}
+              className="text-xs text-brand-600 underline-offset-2 hover:underline"
+            >
+              {avatarConfig.avatar_id ? "Skift avatar" : "Vælg avatar"}
+            </button>
+          </div>
+        </Card>
 
         <Card>
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">
@@ -401,6 +430,14 @@ export default function SoloPage() {
             {isStarting ? "Starter..." : "🚀 Start afstemning"}
           </Button>
         </Card>
+
+        <AvatarPicker
+          open={avatarPickerOpen}
+          initialConfig={avatarConfig}
+          onSave={handleAvatarSave}
+          onCancel={() => setAvatarPickerOpen(false)}
+          saveLabel="Gem"
+        />
       </div>
     );
   }
@@ -410,7 +447,15 @@ export default function SoloPage() {
 
     return (
       <div className="flex min-h-[80vh] flex-col justify-between gap-6 py-4">
-        <VoteProgress current={currentIndex} total={options.length} />
+        <div className="flex flex-col gap-2">
+          {avatarConfig.avatar_id && (
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Avatar config={avatarConfig} size="sm" />
+              <span>Du stemmer solo</span>
+            </div>
+          )}
+          <VoteProgress current={currentIndex} total={options.length} />
+        </div>
 
         <div className="relative flex-1">
           <AnimatePresence mode="popLayout" initial={false}>

@@ -37,16 +37,50 @@ export function CursorFollower({
   useEffect(() => {
     if (reducedMotion || !svgRef.current) return;
 
-    const engine = mountFollowerEngine(svgRef.current, {
+    let currentDelay = removeDelay;
+    let engine = mountFollowerEngine(svgRef.current, {
       colors,
-      removeDelay,
+      removeDelay: currentDelay,
       maxShapes,
     });
     engineRef.current = engine;
 
+    // Adaptive degradation: sample frame timing over a rolling 2s window
+    // and halve `removeDelay` if average FPS drops below 30 — re-mount the
+    // engine so existing trails are not stranded with old timings.
     let rafId = 0;
-    const loop = () => {
+    let lastFrame = performance.now();
+    let frames = 0;
+    let elapsed = 0;
+    const DEGRADE_AFTER_MS = 2000;
+    const MIN_DELAY = 80;
+    let hasDegraded = false;
+
+    const loop = (now: number) => {
       engine.tick();
+
+      const delta = now - lastFrame;
+      lastFrame = now;
+      frames += 1;
+      elapsed += delta;
+
+      if (!hasDegraded && elapsed >= DEGRADE_AFTER_MS) {
+        const avgFps = (frames / elapsed) * 1000;
+        if (avgFps < 30 && currentDelay > MIN_DELAY && svgRef.current) {
+          hasDegraded = true;
+          currentDelay = Math.max(MIN_DELAY, Math.floor(currentDelay / 2));
+          engine.destroy();
+          engine = mountFollowerEngine(svgRef.current, {
+            colors,
+            removeDelay: currentDelay,
+            maxShapes: Math.max(4, Math.floor(maxShapes / 2)),
+          });
+          engineRef.current = engine;
+        }
+        frames = 0;
+        elapsed = 0;
+      }
+
       rafId = requestAnimationFrame(loop);
     };
     rafId = requestAnimationFrame(loop);

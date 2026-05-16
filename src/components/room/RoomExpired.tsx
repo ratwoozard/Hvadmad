@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
+
 export default function RoomExpired() {
   return (
     <div className="flex min-h-[80vh] flex-col items-center justify-center gap-4">
@@ -8,9 +10,9 @@ export default function RoomExpired() {
       <p className="text-center text-gray-600">
         Dette rum har været inaktivt for længe og er blevet lukket.
       </p>
-      <a href="/" className="btn-primary mt-4">
+      <Button as="a" href="/" className="mt-4">
         🏠 Opret et nyt rum
-      </a>
+      </Button>
     </div>
   );
 }
