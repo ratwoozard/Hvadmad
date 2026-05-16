@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-inter: "Inter", system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-xl bg-brand-500 px-6 py-3 
+           font-semibold text-white shadow-md transition-all duration-200
+           hover:bg-brand-600 active:scale-95 
+           min-h-touch min-w-touch;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-xl border-2 border-brand-500 
+           px-6 py-3 font-semibold text-brand-700 transition-all duration-200
+           hover:bg-brand-50 active:scale-95
+           min-h-touch min-w-touch;
+  }
+
+  .btn-vote-yes {
+    @apply inline-flex items-center justify-center rounded-2xl bg-vote-yes px-8 py-4
+           text-lg font-bold text-white shadow-lg transition-all duration-150
+           hover:bg-green-600 active:scale-90
+           min-h-touch;
+  }
+
+  .btn-vote-maybe {
+    @apply inline-flex items-center justify-center rounded-2xl bg-vote-maybe px-8 py-4
+           text-lg font-bold text-white shadow-lg transition-all duration-150
+           hover:bg-amber-600 active:scale-90
+           min-h-touch;
+  }
+
+  .btn-vote-no {
+    @apply inline-flex items-center justify-center rounded-2xl bg-vote-no px-8 py-4
+           text-lg font-bold text-white shadow-lg transition-all duration-150
+           hover:bg-red-600 active:scale-90
+           min-h-touch;
+  }
+
+  .card {
+    @apply rounded-2xl bg-white p-6 shadow-sm border border-gray-100;
+  }
+
+  .input-field {
+    @apply w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-lg
+           transition-colors duration-200 placeholder:text-gray-400
+           focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200;
+  }
+}
