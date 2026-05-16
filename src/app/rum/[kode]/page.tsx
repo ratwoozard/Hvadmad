@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { getSessionId } from "@/lib/session";
-import { getRoomByCode, getParticipants, getParticipantBySession } from "@/lib/supabase/queries";
+import {
+  getRoomByCode,
+  getParticipants,
+  getParticipantBySession,
+} from "@/lib/supabase/queries";
+import { supabase } from "@/lib/supabase/client";
 import type { Room, Participant } from "@/types/room";
 import Lobby from "./lobby";
 import Stemme from "./stemme";
@@ -19,11 +24,24 @@ export default function RumPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const refreshParticipants = useCallback(async (roomId: string) => {
+    const list = await getParticipants(roomId);
+    setParticipants(list);
+  }, []);
+
   useEffect(() => {
     async function loadRoom() {
       try {
         const sessionId = getSessionId();
-        const roomData = await getRoomByCode(kode);
+
+        const { data: rooms } = await supabase
+          .from("rooms")
+          .select()
+          .eq("code", kode)
+          .order("created_at", { ascending: false })
+          .limit(1);
+
+        const roomData = rooms && rooms.length > 0 ? rooms[0] : null;
 
         if (!roomData) {
           setError("Rummet findes ikke eller er udløbet.");
@@ -37,7 +55,7 @@ export default function RumPage() {
         );
 
         if (!participantData) {
-          setError("Du er ikke deltager i dette rum.");
+          setError("Du er ikke deltager i dette rum. Prøv at joine igen.");
           setLoading(false);
           return;
         }
@@ -49,13 +67,50 @@ export default function RumPage() {
         setParticipants(participantsList);
         setLoading(false);
       } catch (e: any) {
-        setError("Kunne ikke indlæse rummet.");
+        setError(`Kunne ikke indlæse rummet: ${e.message}`);
         setLoading(false);
       }
     }
 
     loadRoom();
   }, [kode]);
+
+  // Subscribe to participant changes in real-time via DB changes
+  useEffect(() => {
+    if (!room) return;
+
+    const channel = supabase
+      .channel(`db-participants-${room.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "participants",
+          filter: `room_id=eq.${room.id}`,
+        },
+        () => {
+          refreshParticipants(room.id);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "rooms",
+          filter: `id=eq.${room.id}`,
+        },
+        (payload) => {
+          setRoom((prev) => (prev ? { ...prev, ...payload.new } : prev));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [room?.id, refreshParticipants]);
 
   if (loading) {
     return (

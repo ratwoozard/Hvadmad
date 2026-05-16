@@ -1,20 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { Room, Participant, VotingCategory } from "@/types/room";
+import { CATEGORY_LABELS, CATEGORY_EMOJIS } from "@/types/room";
 import {
-  CATEGORY_LABELS,
-  CATEGORY_EMOJIS,
-} from "@/types/room";
-import { updateRoomStatus, getFoodOptionsByCategory, setRoomFoodOptions } from "@/lib/supabase/queries";
+  updateRoomStatus,
+  getFoodOptionsByCategory,
+  setRoomFoodOptions,
+} from "@/lib/supabase/queries";
 import { selectRandomOptions } from "@/lib/food/selection";
 import { getSessionId } from "@/lib/session";
-import {
-  createRoomChannel,
-  subscribeToRoom,
-  broadcastStatusChange,
-  type PresenceState,
-} from "@/lib/supabase/realtime";
 
 const CATEGORIES: VotingCategory[] = [
   "hjemmelavet",
@@ -37,45 +32,17 @@ export default function Lobby({
   participant,
   participants,
   onRoomUpdate,
-  onParticipantsUpdate,
 }: LobbyProps) {
-  const [selectedCategory, setSelectedCategory] = useState<VotingCategory | null>(null);
+  const [selectedCategory, setSelectedCategory] =
+    useState<VotingCategory | null>(null);
   const [isStarting, setIsStarting] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [onlineUsers, setOnlineUsers] = useState<PresenceState[]>([]);
 
   const isHost = participant.is_host;
-  const shareUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/join/${room.code}`
-    : "";
-
-  useEffect(() => {
-    const channel = createRoomChannel(room.code);
-
-    subscribeToRoom(
-      channel,
-      {
-        session_id: getSessionId(),
-        nickname: participant.nickname,
-        is_host: participant.is_host,
-        status: "active",
-        joined_at: participant.joined_at,
-      },
-      {
-        onPresenceSync: (state) => {
-          const users = Object.values(state).flat() as PresenceState[];
-          setOnlineUsers(users);
-        },
-        onStatusChange: (payload) => {
-          onRoomUpdate({ ...room, status: payload.new_status as any });
-        },
-      }
-    );
-
-    return () => {
-      channel.unsubscribe();
-    };
-  }, [room.code]);
+  const shareUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/join/${room.code}`
+      : "";
 
   const handleCopy = async () => {
     try {
@@ -83,7 +50,7 @@ export default function Lobby({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback for older browsers
+      // Fallback: select text
     }
   };
 
@@ -101,14 +68,6 @@ export default function Lobby({
       );
       await updateRoomStatus(room.id, "voting", selectedCategory);
 
-      const channel = createRoomChannel(room.code);
-      broadcastStatusChange(channel, {
-        new_status: "voting",
-        category: selectedCategory,
-        food_option_count: selected.length,
-        triggered_by: getSessionId(),
-      });
-
       onRoomUpdate({ ...room, status: "voting", category: selectedCategory });
     } catch (e: any) {
       setIsStarting(false);
@@ -124,41 +83,47 @@ export default function Lobby({
           <p className="text-4xl font-bold tracking-widest text-brand-600">
             {room.code}
           </p>
-          <button
-            onClick={handleCopy}
-            className="mt-3 btn-secondary w-full text-sm"
-          >
-            {copied ? "✓ Kopieret!" : "📋 Kopiér link"}
-          </button>
+          <div className="mt-3 flex gap-2">
+            <button
+              onClick={handleCopy}
+              className="btn-secondary flex-1 text-sm"
+            >
+              {copied ? "✓ Kopieret!" : "📋 Kopiér link"}
+            </button>
+          </div>
+          <p className="mt-2 text-xs text-gray-400 break-all">{shareUrl}</p>
         </div>
       </div>
 
       <div className="card">
-        <h2 className="mb-3 text-sm font-semibold text-gray-500 uppercase tracking-wide">
-          Deltagere ({onlineUsers.length || participants.length})
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">
+          Deltagere ({participants.length})
         </h2>
         <div className="flex flex-wrap gap-2">
-          {(onlineUsers.length > 0 ? onlineUsers : participants).map(
-            (p: any, i: number) => (
-              <span
-                key={p.session_id || i}
-                className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium ${
-                  p.is_host
-                    ? "bg-brand-100 text-brand-800"
-                    : "bg-gray-100 text-gray-700"
-                }`}
-              >
-                {p.is_host && "👑 "}
-                {p.nickname}
-              </span>
-            )
-          )}
+          {participants.map((p) => (
+            <span
+              key={p.id}
+              className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium ${
+                p.is_host
+                  ? "bg-brand-100 text-brand-800"
+                  : "bg-gray-100 text-gray-700"
+              }`}
+            >
+              {p.is_host && "👑 "}
+              {p.nickname}
+            </span>
+          ))}
         </div>
+        {participants.length < 2 && (
+          <p className="mt-3 text-center text-sm text-gray-400">
+            Del koden med din gruppe for at starte...
+          </p>
+        )}
       </div>
 
       {isHost && (
         <div className="card">
-          <h2 className="mb-3 text-sm font-semibold text-gray-500 uppercase tracking-wide">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">
             Vælg kategori
           </h2>
           <div className="grid grid-cols-1 gap-2">
@@ -168,8 +133,8 @@ export default function Lobby({
                 onClick={() => setSelectedCategory(cat)}
                 className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
                   selectedCategory === cat
-                    ? "bg-brand-100 border-2 border-brand-500 text-brand-800"
-                    : "bg-gray-50 border-2 border-transparent hover:bg-gray-100"
+                    ? "border-2 border-brand-500 bg-brand-100 text-brand-800"
+                    : "border-2 border-transparent bg-gray-50 hover:bg-gray-100"
                 }`}
               >
                 <span className="text-2xl">{CATEGORY_EMOJIS[cat]}</span>

@@ -3,11 +3,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getSessionId } from "@/lib/session";
-import {
-  getRoomByCode,
-  joinRoom,
-  getParticipantBySession,
-} from "@/lib/supabase/queries";
+import { supabase } from "@/lib/supabase/client";
+import { joinRoom, getParticipantBySession } from "@/lib/supabase/queries";
 
 export default function JoinPage() {
   const params = useParams();
@@ -18,14 +15,25 @@ export default function JoinPage() {
   const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState("");
   const [checking, setChecking] = useState(true);
+  const [roomReady, setRoomReady] = useState(false);
 
   useEffect(() => {
     async function checkRoom() {
       const sessionId = getSessionId();
-      const room = await getRoomByCode(kode);
+
+      const { data: rooms } = await supabase
+        .from("rooms")
+        .select()
+        .eq("code", kode)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      const room = rooms && rooms.length > 0 ? rooms[0] : null;
 
       if (!room) {
-        setError("Rummet findes ikke eller er udløbet. Tjek koden og prøv igen.");
+        setError(
+          "Rummet findes ikke eller er udløbet. Tjek koden og prøv igen."
+        );
         setChecking(false);
         return;
       }
@@ -42,6 +50,7 @@ export default function JoinPage() {
         return;
       }
 
+      setRoomReady(true);
       setChecking(false);
     }
     checkRoom();
@@ -60,7 +69,15 @@ export default function JoinPage() {
 
     try {
       const sessionId = getSessionId();
-      const room = await getRoomByCode(kode);
+
+      const { data: rooms } = await supabase
+        .from("rooms")
+        .select()
+        .eq("code", kode)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      const room = rooms && rooms.length > 0 ? rooms[0] : null;
 
       if (!room) {
         setError("Rummet findes ikke længere.");
@@ -70,17 +87,6 @@ export default function JoinPage() {
 
       if (room.status !== "lobby") {
         setError("Afstemningen er allerede startet.");
-        setIsJoining(false);
-        return;
-      }
-
-      const { data: participantCount } = await (await import("@/lib/supabase/client")).supabase
-        .from("participants")
-        .select("id", { count: "exact", head: true })
-        .eq("room_id", room.id);
-
-      if (participantCount && (participantCount as any).count >= 20) {
-        setError("Rummet er fuldt (maks 20 deltagere).");
         setIsJoining(false);
         return;
       }
@@ -104,7 +110,7 @@ export default function JoinPage() {
     );
   }
 
-  if (error && !nickname) {
+  if (error && !roomReady) {
     return (
       <div className="flex min-h-[80vh] flex-col items-center justify-center gap-4">
         <div className="text-4xl">😕</div>
@@ -144,9 +150,7 @@ export default function JoinPage() {
           autoComplete="off"
         />
 
-        {error && (
-          <p className="mt-2 text-sm text-red-500">{error}</p>
-        )}
+        {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
 
         <button
           type="submit"

@@ -27,11 +27,12 @@ export async function getRoomByCode(code: string): Promise<Room | null> {
     .from("rooms")
     .select()
     .eq("code", code.toUpperCase())
-    .neq("status", "results")
-    .single();
+    .in("status", ["lobby", "voting", "calculating"])
+    .order("created_at", { ascending: false })
+    .limit(1);
 
-  if (error) return null;
-  return data;
+  if (error || !data || data.length === 0) return null;
+  return data[0];
 }
 
 export async function updateRoomStatus(
