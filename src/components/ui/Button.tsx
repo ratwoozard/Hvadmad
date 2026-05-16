@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, type AnchorHTMLAttributes, type ButtonHTMLAttributes, type ReactNode } from "react";
-import { motion, type HTMLMotionProps } from "framer-motion";
+import { motion } from "framer-motion";
 import { cn, FOCUS_RING } from "./FocusRing";
 
 type Variant =
@@ -121,33 +121,39 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, Props>(
 
     if (props.as === "a") {
       const { as: _as, ...anchorRest } = rest as AnchorProps;
+      const MotionAnchor = motion.a as unknown as React.ComponentType<
+        Record<string, unknown>
+      >;
       return (
-        <motion.a
+        <MotionAnchor
           ref={ref as React.Ref<HTMLAnchorElement>}
           className={classes}
           aria-busy={loading || undefined}
-          {...(motionProps as HTMLMotionProps<"a">)}
+          {...motionProps}
           {...anchorRest}
         >
           {inner}
-        </motion.a>
+        </MotionAnchor>
       );
     }
 
     const { as: _as, type = "button", disabled, ...buttonRest } =
       rest as ButtonProps;
+    const MotionButton = motion.button as unknown as React.ComponentType<
+      Record<string, unknown>
+    >;
     return (
-      <motion.button
+      <MotionButton
         ref={ref as React.Ref<HTMLButtonElement>}
         type={type}
         className={classes}
         disabled={disabled || loading}
         aria-busy={loading || undefined}
-        {...(motionProps as HTMLMotionProps<"button">)}
+        {...motionProps}
         {...buttonRest}
       >
         {inner}
-      </motion.button>
+      </MotionButton>
     );
   },
 );

@@ -24,11 +24,11 @@ description: "Task list for feature 002-ui-polish-animations"
 
 **Formål**: Forberedelse uden at røre runtime-adfærd.
 
-- [ ] T001 [P] Verify Framer Motion 11.x er korrekt installeret (`npm ls framer-motion`); opdatér til seneste 11.x patch hvis nødvendigt i `package.json`
+- [X] T001 [P] Verify Framer Motion 11.x er korrekt installeret (`npm ls framer-motion`); opdatér til seneste 11.x patch hvis nødvendigt i `package.json`
 - [ ] T002 [P] Tilføj nye easing/duration animation keys til `tailwind.config.ts` for fallback-CSS-animations (ingen breaking change til eksisterende keyframes)
-- [ ] T003 [P] Opret tom motion-tokens-modul-skelet i `src/lib/motion/tokens.ts` (eksporterer placeholder `DURATION`, `EASING`, `STAGGER` const-objekter)
-- [ ] T004 [P] Opret tom variants-modul-skelet i `src/lib/motion/variants.ts`
-- [ ] T005 [P] Tilføj feature-flag `NEXT_PUBLIC_ENABLE_CURSOR_EFFECT` med default `true` til `.env.local.example`
+- [X] T003 [P] Opret tom motion-tokens-modul-skelet i `src/lib/motion/tokens.ts` (eksporterer placeholder `DURATION`, `EASING`, `STAGGER` const-objekter)
+- [X] T004 [P] Opret tom variants-modul-skelet i `src/lib/motion/variants.ts`
+- [X] T005 [P] Tilføj feature-flag `NEXT_PUBLIC_ENABLE_CURSOR_EFFECT` med default `true` til `.env.local.example`
 
 ---
 
@@ -40,30 +40,30 @@ description: "Task list for feature 002-ui-polish-animations"
 
 ### Motion tokens og hooks
 
-- [ ] T006 [P] Færdiggør motion-tokens med endelige værdier i `src/lib/motion/tokens.ts` per `contracts/components.md` § 13
-- [ ] T007 [P] Implementér genbrugelige Framer Motion variants (`fadeUp`, `staggerChildren`, `voteCardExit`) i `src/lib/motion/variants.ts`
-- [ ] T008 [P] Implementér `useReducedMotion` hook (wrapper omkring Framer Motion's egen) i `src/hooks/useReducedMotion.ts`
-- [ ] T009 [P] Implementér `usePointerTrail(callback, options)` hook i `src/hooks/usePointerTrail.ts` (binder `pointermove` på window/target, ryddes op ved unmount)
+- [X] T006 [P] Færdiggør motion-tokens med endelige værdier i `src/lib/motion/tokens.ts` per `contracts/components.md` § 13
+- [X] T007 [P] Implementér genbrugelige Framer Motion variants (`fadeUp`, `staggerChildren`, `voteCardExit`) i `src/lib/motion/variants.ts`
+- [X] T008 [P] Implementér `useReducedMotion` hook (wrapper omkring Framer Motion's egen) i `src/hooks/useReducedMotion.ts`
+- [X] T009 [P] Implementér `usePointerTrail(callback, options)` hook i `src/hooks/usePointerTrail.ts` (binder `pointermove` på window/target, ryddes op ved unmount)
 
 ### Tests for foundational hooks
 
-- [ ] T010 [P] Unit test for `useReducedMotion` med `matchMedia`-mock i `tests/unit/useReducedMotion.test.ts`
-- [ ] T011 [P] Unit test for `usePointerTrail` (mock pointer events, verify callback + cleanup) i `tests/unit/usePointerTrail.test.ts`
+- [X] T010 [P] Unit test for `useReducedMotion` med `matchMedia`-mock i `tests/unit/useReducedMotion.test.ts`
+- [X] T011 [P] Unit test for `usePointerTrail` (mock pointer events, verify callback + cleanup) i `tests/unit/usePointerTrail.test.ts`
 
 ### Delte UI-primitiver (React-komponenter erstatter CSS-klasser)
 
-- [ ] T012 [P] Implementér `<MotionProvider>` i `src/components/ui/MotionConfig.tsx` (wrapper `MotionConfig reducedMotion="user"`)
-- [ ] T013 [P] Implementér `<FocusRing>` util i `src/components/ui/FocusRing.tsx` (delt klassesæt for synlig fokus-ring)
-- [ ] T014 [P] Implementér `<Button>` primitive i `src/components/ui/Button.tsx` per `contracts/components.md` § 4 (variants, sizes, loading, polymorphic `as`)
-- [ ] T015 [P] Implementér `<Input>` primitive i `src/components/ui/Input.tsx` per `contracts/components.md` § 5 (label, error, hint, icons)
-- [ ] T016 [P] Implementér `<Card>` primitive i `src/components/ui/Card.tsx` per `contracts/components.md` § 6 (interactive, padding variants)
+- [X] T012 [P] Implementér `<MotionProvider>` i `src/components/ui/MotionConfig.tsx` (wrapper `MotionConfig reducedMotion="user"`)
+- [X] T013 [P] Implementér `<FocusRing>` util i `src/components/ui/FocusRing.tsx` (delt klassesæt for synlig fokus-ring)
+- [X] T014 [P] Implementér `<Button>` primitive i `src/components/ui/Button.tsx` per `contracts/components.md` § 4 (variants, sizes, loading, polymorphic `as`)
+- [X] T015 [P] Implementér `<Input>` primitive i `src/components/ui/Input.tsx` per `contracts/components.md` § 5 (label, error, hint, icons)
+- [X] T016 [P] Implementér `<Card>` primitive i `src/components/ui/Card.tsx` per `contracts/components.md` § 6 (interactive, padding variants)
 
 ### Page transition + footer infrastruktur
 
-- [ ] T017 Implementér `<PageTransition>` i `src/components/ui/PageTransition.tsx` per `contracts/components.md` § 3
-- [ ] T018 Opret `src/app/template.tsx` der wrapper children i `<PageTransition>` (Next.js re-mount per navigation)
-- [ ] T019 Implementér `<Footer>` i `src/components/ui/Footer.tsx` med WeGoDigital.dk-link per `contracts/components.md` § 7
-- [ ] T020 Opdatér `src/app/layout.tsx` til at (a) wrappe `<body>` i CSS Grid (`grid-rows-[1fr_auto]`), (b) inkludere `<MotionProvider>` rundt om `<main>` + `<Footer />`
+- [X] T017 Implementér `<PageTransition>` i `src/components/ui/PageTransition.tsx` per `contracts/components.md` § 3
+- [X] T018 Opret `src/app/template.tsx` der wrapper children i `<PageTransition>` (Next.js re-mount per navigation)
+- [X] T019 Implementér `<Footer>` i `src/components/ui/Footer.tsx` med WeGoDigital.dk-link per `contracts/components.md` § 7
+- [X] T020 Opdatér `src/app/layout.tsx` til at (a) wrappe `<body>` i CSS Grid (`grid-rows-[1fr_auto]`), (b) inkludere `<MotionProvider>` rundt om `<main>` + `<Footer />`
 
 **Checkpoint**: Foundation er klar — alle user stories kan nu påbegyndes parallelt.
 
@@ -77,21 +77,21 @@ description: "Task list for feature 002-ui-polish-animations"
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T021 [P] [US1] Unit test for `follower-engine.ts`: point-trimming når `time < now - removeDelay` i `tests/unit/follower-engine.test.ts`
-- [ ] T022 [P] [US1] Unit test for `follower-engine.ts`: shape-cap (maks `maxShapes` samtidige) i samme fil
-- [ ] T023 [P] [US1] Unit test for `follower-engine.ts`: color-rotation gennem den 5-farvede palette i samme fil
+- [X] T021 [P] [US1] Unit test for `follower-engine.ts`: point-trimming når `time < now - removeDelay` i `tests/unit/follower-engine.test.ts`
+- [X] T022 [P] [US1] Unit test for `follower-engine.ts`: shape-cap (maks `maxShapes` samtidige) i samme fil
+- [X] T023 [P] [US1] Unit test for `follower-engine.ts`: color-rotation gennem den 5-farvede palette i samme fil
 - [ ] T024 [P] [US1] E2E test for cursor follower: mousemove på `/` skaber `<path>`-noder i SVG i `tests/e2e/cursor-follower.spec.ts`
 - [ ] T025 [P] [US1] E2E test for reduced-motion på `/`: ingen `<svg>` med follower-elementer når `emulateMedia({ reducedMotion: 'reduce' })` i `tests/e2e/reduced-motion.spec.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T026 [P] [US1] Definér interne typer (`Position`, `Point`, `Shape`, `EngineOptions`) i `src/components/ui/effects/follower.types.ts`
-- [ ] T027 [US1] Implementér framework-uafhængig `follower-engine.ts` i `src/components/ui/effects/follower-engine.ts` (refaktor af brugerens leverede `SVGFollower`-logik: `mount(svgEl, opts)`, `addPoint(pos)`, `tick(now)`, `destroy()`)
-- [ ] T028 [US1] Implementér `<CursorFollower>` React-binding i `src/components/ui/effects/CursorFollower.tsx` (bruger `usePointerTrail` + `useReducedMotion`, sætter `pointer-events: none` på SVG-lag, `aria-hidden="true"`)
-- [ ] T029 [US1] Konfigurér HvadMad-brandfarver (5 farver per `research.md` § R3) som default `colors` prop i `<CursorFollower>`
+- [X] T026 [P] [US1] Definér interne typer (`Position`, `Point`, `Shape`, `EngineOptions`) i `src/components/ui/effects/follower.types.ts`
+- [X] T027 [US1] Implementér framework-uafhængig `follower-engine.ts` i `src/components/ui/effects/follower-engine.ts` (refaktor af brugerens leverede `SVGFollower`-logik: `mount(svgEl, opts)`, `addPoint(pos)`, `tick(now)`, `destroy()`)
+- [X] T028 [US1] Implementér `<CursorFollower>` React-binding i `src/components/ui/effects/CursorFollower.tsx` (bruger `usePointerTrail` + `useReducedMotion`, sætter `pointer-events: none` på SVG-lag, `aria-hidden="true"`)
+- [X] T029 [US1] Konfigurér HvadMad-brandfarver (5 farver per `research.md` § R3) som default `colors` prop i `<CursorFollower>`
 - [ ] T030 [US1] Tilføj adaptiv performance-degradering: lyt til FPS via `requestAnimationFrame`-timing og halvér `maxShapes` hvis gennemsnit under 30 FPS i 2 sek i `follower-engine.ts`
-- [ ] T031 [US1] Wrap `<CursorFollower>` med `next/dynamic({ ssr: false })` og integrér i `src/app/page.tsx` rundt om hero-sektionen (children fortsætter med at modtage klik)
-- [ ] T032 [US1] Tilføj feature-flag-check (`process.env.NEXT_PUBLIC_ENABLE_CURSOR_EFFECT !== 'false'`) i `src/app/page.tsx` så effekten kan slås fra via env
+- [X] T031 [US1] Wrap `<CursorFollower>` med `next/dynamic({ ssr: false })` og integrér i `src/app/page.tsx` rundt om hero-sektionen (children fortsætter med at modtage klik)
+- [X] T032 [US1] Tilføj feature-flag-check (`process.env.NEXT_PUBLIC_ENABLE_CURSOR_EFFECT !== 'false'`) i `src/app/page.tsx` så effekten kan slås fra via env
 
 **Checkpoint**: Forsidens cursor-effekt fungerer fuldt — testbar og deploybar uafhængigt.
 
@@ -176,9 +176,9 @@ description: "Task list for feature 002-ui-polish-animations"
 
 > Bemærk: `<Footer>` selv blev oprettet i Phase 2 (T019) som delt infrastruktur. US4-tasks her dækker integration og fjernelse af duplikatet.
 
-- [ ] T058 [US4] Fjern det inline WeGoDigital.dk-link fra `src/app/page.tsx` (linje 88-97) — det erstattes nu af den globale `<Footer>` fra root layout
+- [X] T058 [US4] Fjern det inline WeGoDigital.dk-link fra `src/app/page.tsx` (linje 88-97) — det erstattes nu af den globale `<Footer>` fra root layout
 - [ ] T059 [US4] Verificér i browser at footer ikke overlapper indhold på mobile viewports (320px, 375px, 414px) — juster Grid eller padding i `src/app/layout.tsx` hvis nødvendigt
-- [ ] T060 [US4] Tilføj `<link rel="dns-prefetch" href="https://www.WeGoDigital.dk" />` i `src/app/layout.tsx` `<head>` for hurtigere ekstern navigation
+- [X] T060 [US4] Tilføj `<link rel="dns-prefetch" href="https://www.WeGoDigital.dk" />` i `src/app/layout.tsx` `<head>` for hurtigere ekstern navigation
 
 **Checkpoint**: WeGoDigital.dk-branding konsistent og friktionsfri.
 
@@ -199,7 +199,7 @@ description: "Task list for feature 002-ui-polish-animations"
 ### A11y-implementering
 
 - [ ] T064 [P] [US5] Auditér og tilføj manglende `aria-label`/`aria-labelledby` på ikon-only knapper i `<Button>` (kræv at `aria-label` er sat hvis kun `leadingIcon`/`trailingIcon` uden tekst)
-- [ ] T065 [P] [US5] Tilføj `skip-to-content` link øverst i `src/app/layout.tsx` (synlig kun på fokus)
+- [X] T065 [P] [US5] Tilføj `skip-to-content` link øverst i `src/app/layout.tsx` (synlig kun på fokus)
 - [ ] T066 [US5] Verificér og dokumentér fokus-rækkefølge på hver hovedside i `specs/002-ui-polish-animations/quickstart.md` § E
 
 ### Performance-budget
