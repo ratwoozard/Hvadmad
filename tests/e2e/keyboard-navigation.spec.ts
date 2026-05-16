@@ -35,6 +35,7 @@ test.describe("Keyboard navigation (US2 + US5 — 002)", () => {
 
     const input = page.getByLabel(/Dit nickname/);
     await input.fill("Tester");
+    await page.getByRole("radio", { name: /Pizza-karakter/ }).click();
     const submit = page.getByRole("button", { name: /opret rum/i });
     await expect(submit).toBeEnabled();
     await submit.focus();

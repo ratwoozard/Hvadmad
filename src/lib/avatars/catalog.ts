@@ -2,22 +2,102 @@ import type { Avatar, AvatarConfiguration, Hat, Slot } from "@/types/avatar";
 import { MAX_HATS } from "@/types/avatar";
 
 export const AVATARS: readonly Avatar[] = [
-  { id: "pizza", name: "Pizza", emoji: "🍕", altText: "Pizza-avatar" },
-  { id: "burger", name: "Burger", emoji: "🍔", altText: "Burger-avatar" },
-  { id: "taco", name: "Taco", emoji: "🌮", altText: "Taco-avatar" },
-  { id: "sushi", name: "Sushi", emoji: "🍣", altText: "Sushi-avatar" },
-  { id: "pasta", name: "Pasta", emoji: "🍝", altText: "Pasta-avatar" },
-  { id: "salad", name: "Salat", emoji: "🥗", altText: "Salat-avatar" },
-  { id: "sandwich", name: "Sandwich", emoji: "🥪", altText: "Sandwich-avatar" },
-  { id: "ramen", name: "Ramen", emoji: "🍜", altText: "Ramen-avatar" },
-  { id: "fox", name: "Ræv", emoji: "🦊", altText: "Ræve-avatar" },
-  { id: "cat", name: "Kat", emoji: "🐱", altText: "Katte-avatar" },
-  { id: "dog", name: "Hund", emoji: "🐶", altText: "Hunde-avatar" },
-  { id: "panda", name: "Panda", emoji: "🐼", altText: "Panda-avatar" },
-  { id: "bunny", name: "Kanin", emoji: "🐰", altText: "Kanin-avatar" },
-  { id: "robot", name: "Robot", emoji: "🤖", altText: "Robot-avatar" },
-  { id: "alien", name: "Alien", emoji: "👽", altText: "Alien-avatar" },
-  { id: "dragon", name: "Drage", emoji: "🐉", altText: "Drage-avatar" },
+  {
+    id: "noodles",
+    name: "Nudler",
+    imageSrc: "/characters/noodles.png",
+    altText: "Nuddel-karakter",
+  },
+  {
+    id: "pizza",
+    name: "Pizza",
+    imageSrc: "/characters/pizza.png",
+    altText: "Pizza-karakter",
+  },
+  {
+    id: "burger",
+    name: "Burger",
+    imageSrc: "/characters/burger.png",
+    altText: "Burger-karakter",
+  },
+  {
+    id: "ramen",
+    name: "Ramen",
+    imageSrc: "/characters/ramen.png",
+    altText: "Ramen-karakter",
+  },
+  {
+    id: "taco",
+    name: "Taco",
+    imageSrc: "/characters/taco.png",
+    altText: "Taco-karakter",
+  },
+  {
+    id: "salad",
+    name: "Salat",
+    imageSrc: "/characters/salad.png",
+    altText: "Salat-karakter",
+  },
+  {
+    id: "dumpling",
+    name: "Dumpling",
+    imageSrc: "/characters/dumpling.png",
+    altText: "Dumpling-karakter",
+  },
+  {
+    id: "sushi",
+    name: "Sushi",
+    imageSrc: "/characters/sushi.png",
+    altText: "Sushi-karakter",
+  },
+  {
+    id: "donut",
+    name: "Donut",
+    imageSrc: "/characters/donut.png",
+    altText: "Donut-karakter",
+  },
+  {
+    id: "avocado",
+    name: "Avocado",
+    imageSrc: "/characters/avocado.png",
+    altText: "Avocado-karakter",
+  },
+  {
+    id: "croissant",
+    name: "Croissant",
+    imageSrc: "/characters/croissant.png",
+    altText: "Croissant-karakter",
+  },
+  {
+    id: "strawberry",
+    name: "Jordbær",
+    imageSrc: "/characters/strawberry.png",
+    altText: "Jordbær-karakter",
+  },
+  {
+    id: "hotdog",
+    name: "Hotdog",
+    imageSrc: "/characters/hotdog.png",
+    altText: "Hotdog-karakter",
+  },
+  {
+    id: "pancakes",
+    name: "Pandekager",
+    imageSrc: "/characters/pancakes.png",
+    altText: "Pandekage-karakter",
+  },
+  {
+    id: "onigiri",
+    name: "Onigiri",
+    imageSrc: "/characters/onigiri.png",
+    altText: "Onigiri-karakter",
+  },
+  {
+    id: "icecream",
+    name: "Is",
+    imageSrc: "/characters/icecream.png",
+    altText: "Is-karakter",
+  },
 ];
 
 export const HATS: readonly Hat[] = [

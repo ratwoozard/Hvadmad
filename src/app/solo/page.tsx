@@ -22,7 +22,7 @@ import { VoteProgress } from "@/components/voting/VoteProgress";
 import { RandomWheel, type WheelOption } from "@/components/results/RandomWheel";
 import { resultStagger, fadeUp } from "@/lib/motion/variants";
 import { Avatar } from "@/components/avatar/Avatar";
-import { AvatarPicker } from "@/components/avatar/AvatarPicker";
+import { CharacterPicker } from "@/components/avatar/CharacterPicker";
 import type { AvatarConfiguration } from "@/types/avatar";
 import { EMPTY_CONFIG } from "@/lib/avatars/default";
 
@@ -71,8 +71,8 @@ export default function SoloPage() {
   const [exitDirection, setExitDirection] = useState<VoteDirection | null>(null);
 
   const [wheelOpen, setWheelOpen] = useState(false);
-  const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
-  const [avatarConfig, setAvatarConfig] = useState<AvatarConfiguration>(EMPTY_CONFIG);
+  const [avatarConfig, setAvatarConfig] =
+    useState<AvatarConfiguration>(EMPTY_CONFIG);
 
   const addCustomDish = () => setCustomDishes([...customDishes, ""]);
   const updateCustomDish = (index: number, value: string) => {
@@ -203,11 +203,6 @@ export default function SoloPage() {
     setWheelOpen(false);
   };
 
-  const handleAvatarSave = (chosen: AvatarConfiguration) => {
-    setAvatarConfig(chosen);
-    setAvatarPickerOpen(false);
-  };
-
   if (phase === "setup") {
     return (
       <div className="flex min-h-[80vh] flex-col gap-6">
@@ -227,22 +222,13 @@ export default function SoloPage() {
           </p>
         </div>
 
-        <Card className="flex items-center gap-3">
-          <Avatar config={avatarConfig} size="md" />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-gray-800">
-              {avatarConfig.avatar_id
-                ? "Din avatar er klar"
-                : "Vælg evt. en avatar"}
-            </p>
-            <button
-              type="button"
-              onClick={() => setAvatarPickerOpen(true)}
-              className="text-xs text-brand-600 underline-offset-2 hover:underline"
-            >
-              {avatarConfig.avatar_id ? "Skift avatar" : "Vælg avatar"}
-            </button>
-          </div>
+        <Card>
+          <CharacterPicker
+            selectedAvatarId={avatarConfig.avatar_id}
+            onChange={(avatarId) =>
+              setAvatarConfig({ avatar_id: avatarId, hat_ids: [] })
+            }
+          />
         </Card>
 
         <Card>
@@ -431,13 +417,6 @@ export default function SoloPage() {
           </Button>
         </Card>
 
-        <AvatarPicker
-          open={avatarPickerOpen}
-          initialConfig={avatarConfig}
-          onSave={handleAvatarSave}
-          onCancel={() => setAvatarPickerOpen(false)}
-          saveLabel="Gem"
-        />
       </div>
     );
   }

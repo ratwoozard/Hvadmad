@@ -8,7 +8,6 @@ import {
   updateRoomStatus,
   getFoodOptionsByCategory,
   setRoomFoodOptions,
-  updateParticipantAvatar,
 } from "@/lib/supabase/queries";
 import { supabase } from "@/lib/supabase/client";
 import { selectRandomOptions } from "@/lib/food/selection";
@@ -18,8 +17,6 @@ import { Card } from "@/components/ui/Card";
 import { cn, FOCUS_RING } from "@/components/ui/FocusRing";
 import { fadeUp } from "@/lib/motion/variants";
 import { AvatarBadge } from "@/components/avatar/AvatarBadge";
-import { AvatarPicker } from "@/components/avatar/AvatarPicker";
-import type { AvatarConfiguration } from "@/types/avatar";
 
 const CATEGORIES: VotingCategory[] = [
   "hjemmelavet",
@@ -36,7 +33,6 @@ interface LobbyProps {
   participant: Participant;
   participants: Participant[];
   onRoomUpdate: (room: Room) => void;
-  onParticipantsUpdate: (participants: Participant[]) => void;
 }
 
 const MODE_OPTION =
@@ -50,7 +46,6 @@ export default function Lobby({
   participant,
   participants,
   onRoomUpdate,
-  onParticipantsUpdate,
 }: LobbyProps) {
   const [voteMode, setVoteMode] = useState<VoteMode | null>(null);
   const [selectedCategory, setSelectedCategory] =
@@ -58,22 +53,6 @@ export default function Lobby({
   const [customDishes, setCustomDishes] = useState<string[]>([""]);
   const [isStarting, setIsStarting] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [avatarEditOpen, setAvatarEditOpen] = useState(false);
-
-  const handleAvatarSave = async (config: AvatarConfiguration) => {
-    setAvatarEditOpen(false);
-    const updated = participants.map((p) =>
-      p.id === participant.id
-        ? { ...p, avatar_id: config.avatar_id, hat_ids: config.hat_ids }
-        : p,
-    );
-    onParticipantsUpdate(updated);
-    try {
-      await updateParticipantAvatar(participant.id, config);
-    } catch {
-      onParticipantsUpdate(participants);
-    }
-  };
 
   const isHost = participant.is_host;
   const shareUrl =
@@ -197,21 +176,10 @@ export default function Lobby({
       </div>
 
       <Card>
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
             Deltagere ({participants.length})
           </h2>
-          {room.status === "lobby" && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setAvatarEditOpen(true)}
-              className="!min-h-0 !min-w-0 px-2 py-1 text-xs"
-            >
-              ✏️ Skift avatar
-            </Button>
-          )}
         </div>
         <ul className="flex flex-wrap gap-3" aria-live="polite">
           <AnimatePresence initial={false}>
@@ -431,18 +399,6 @@ export default function Lobby({
           <div className="mt-2 animate-pulse text-2xl">⏳</div>
         </Card>
       )}
-
-      <AvatarPicker
-        open={avatarEditOpen}
-        initialConfig={{
-          avatar_id: participant.avatar_id ?? null,
-          hat_ids: participant.hat_ids ?? [],
-        }}
-        onSave={handleAvatarSave}
-        onCancel={() => setAvatarEditOpen(false)}
-        allowSkip={false}
-        saveLabel="Gem"
-      />
     </div>
   );
 }

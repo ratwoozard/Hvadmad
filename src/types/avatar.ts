@@ -3,8 +3,9 @@ export type Slot = "head" | "eyes" | "mouth" | "neck";
 export interface Avatar {
   id: string;
   name: string;
-  emoji: string;
+  imageSrc: string;
   altText: string;
+  emoji?: string;
 }
 
 export interface Hat {

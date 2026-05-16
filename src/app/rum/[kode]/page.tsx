@@ -111,7 +111,7 @@ export default function RumPage() {
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [room?.id, refreshParticipants]);
+  }, [room, refreshParticipants]);
 
   if (loading) {
     return (
@@ -152,7 +152,6 @@ export default function RumPage() {
             setRoom(r);
             roomRef.current = r;
           }}
-          onParticipantsUpdate={setParticipants}
         />
       );
     case "voting":

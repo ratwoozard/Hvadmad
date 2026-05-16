@@ -17,6 +17,9 @@ const CursorFollower = dynamic(
 const CURSOR_EFFECT_ENABLED =
   process.env.NEXT_PUBLIC_ENABLE_CURSOR_EFFECT !== "false";
 
+const HOME_SHELL_CLASS =
+  "relative flex min-h-[80vh] w-full flex-col items-center justify-center overflow-hidden rounded-[2rem] px-4 py-10";
+
 export default function Home() {
   const router = useRouter();
   const [joinCode, setJoinCode] = useState("");
@@ -30,8 +33,22 @@ export default function Home() {
     }
   };
 
-  const content = (
+  const background = (
     <>
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-cover bg-center opacity-90"
+        style={{ backgroundImage: "url('/backgrounds/frontpage-food-bg.png')" }}
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/82 to-white/75"
+      />
+    </>
+  );
+
+  const content = (
+    <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-8">
       <motion.div
         className="text-center"
         initial={{ opacity: 0, y: 16 }}
@@ -122,19 +139,21 @@ export default function Home() {
       <p className="text-center text-sm text-gray-400">
         Ingen login. Ingen data. Bare mad. 🍽️
       </p>
-    </>
+    </div>
   );
 
   if (CURSOR_EFFECT_ENABLED) {
     return (
-      <CursorFollower className="flex min-h-[80vh] w-full flex-col items-center justify-center gap-8">
+      <CursorFollower className={HOME_SHELL_CLASS}>
+        {background}
         {content}
       </CursorFollower>
     );
   }
 
   return (
-    <div className="flex min-h-[80vh] w-full flex-col items-center justify-center gap-8">
+    <div className={HOME_SHELL_CLASS}>
+      {background}
       {content}
     </div>
   );

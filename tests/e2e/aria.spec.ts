@@ -18,27 +18,22 @@ test.describe("ARIA & landmarks (US5 — 002 + 003)", () => {
     expect(await svgs.count()).toBeGreaterThanOrEqual(1);
   });
 
-  test("opret avatar picker exposes dialog ARIA when opened", async ({
+  test("opret character picker exposes radiogroup ARIA", async ({
     page,
   }) => {
     await page.goto("/opret");
-    await page.getByLabel(/Dit nickname/).fill("AriaTester");
-    await page.getByRole("button", { name: /Vælg avatar/ }).click();
 
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
-    await expect(dialog).toHaveAttribute("aria-modal", "true");
+    const picker = page.getByRole("radiogroup", { name: /Vælg en karakter/ });
+    await expect(picker).toBeVisible();
   });
 
-  test("avatars in the picker have descriptive accessible names", async ({
+  test("characters in the picker have descriptive accessible names", async ({
     page,
   }) => {
     await page.goto("/opret");
-    await page.getByLabel(/Dit nickname/).fill("AriaTester");
-    await page.getByRole("button", { name: /Vælg avatar/ }).click();
 
     const firstAvatar = page
-      .getByRole("button", { name: /Pizza-avatar/ })
+      .getByRole("radio", { name: /Pizza-karakter/ })
       .first();
     await expect(firstAvatar).toBeVisible();
   });

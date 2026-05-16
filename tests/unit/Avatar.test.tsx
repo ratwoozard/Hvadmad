@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { Avatar } from "@/components/avatar/Avatar";
-import { AVATARS, HATS } from "@/lib/avatars/catalog";
+import { AVATARS } from "@/lib/avatars/catalog";
 
 describe("<Avatar>", () => {
   it("renders a placeholder when no avatar is configured", () => {
@@ -10,31 +10,30 @@ describe("<Avatar>", () => {
     expect(container.textContent).toContain("👤");
   });
 
-  it("renders the base avatar emoji when avatar_id is provided", () => {
+  it("renders the character image when avatar_id is provided", () => {
     const pizza = AVATARS.find((a) => a.id === "pizza")!;
-    render(<Avatar config={{ avatar_id: pizza.id, hat_ids: [] }} />);
+    const { container } = render(
+      <Avatar config={{ avatar_id: pizza.id, hat_ids: [] }} />,
+    );
     const el = screen.getByRole("img");
     expect(el).toHaveAttribute("aria-label", pizza.altText);
-    expect(el.textContent).toContain(pizza.emoji);
+    expect(container.querySelector("img")?.getAttribute("src")).toContain(
+      encodeURIComponent(pizza.imageSrc),
+    );
   });
 
-  it("composes aria-label from avatar + every selected hat", () => {
+  it("keeps the character label even if legacy hats are present", () => {
     const pizza = AVATARS.find((a) => a.id === "pizza")!;
-    const tophat = HATS.find((h) => h.slot === "head")!;
-    const glasses = HATS.find((h) => h.slot === "eyes")!;
     render(
       <Avatar
         config={{
           avatar_id: pizza.id,
-          hat_ids: [tophat.id, glasses.id],
+          hat_ids: ["tophat", "glasses"],
         }}
       />,
     );
     const el = screen.getByRole("img");
-    const label = el.getAttribute("aria-label");
-    expect(label).toContain(pizza.altText);
-    expect(label).toContain(tophat.altText);
-    expect(label).toContain(glasses.altText);
+    expect(el).toHaveAttribute("aria-label", pizza.altText);
   });
 
   it("respects size prop via inline width/height", () => {

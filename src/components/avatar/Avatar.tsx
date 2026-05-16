@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import type { ReactNode } from "react";
 import type { AvatarConfiguration } from "@/types/avatar";
-import { getAvatar, getHats } from "@/lib/avatars/catalog";
+import { getAvatar } from "@/lib/avatars/catalog";
 import { cn } from "@/components/ui/FocusRing";
 
 export type AvatarSize = "sm" | "md" | "lg";
@@ -25,24 +26,12 @@ const SIZE_PX: Record<AvatarSize, number> = {
   lg: 96,
 };
 
-const EMOJI_SIZE: Record<AvatarSize, string> = {
-  sm: "text-2xl leading-none",
-  md: "text-5xl leading-none",
-  lg: "text-7xl leading-none",
-};
-
 const PLACEHOLDER = "👤";
 
 /**
- * Render a participant's avatar with stacked hats on top of an emoji base.
- *
- * Composition strategy: each layer is an absolutely-positioned emoji inside
- * a fixed-size container. Hats use slot-defined CSS transforms so a head-
- * hat sits at the top, eye-glasses at eye-level, etc.
- *
- * Accessibility: container is `role="img"` with an `aria-label` composed
- * from the avatar + each hat's Danish alt-text (e.g. "Pizza-avatar med
- * kokkehue og solbriller").
+ * Render a participant's chosen food character.
+ * Accessibility: the wrapper carries the image role and Danish label, while
+ * the decorative PNG itself is hidden from assistive tech.
  */
 export function Avatar({
   config,
@@ -53,13 +42,8 @@ export function Avatar({
   className,
 }: AvatarProps) {
   const avatar = getAvatar(config?.avatar_id);
-  const hats = getHats(config?.hat_ids ?? []);
 
-  const composedLabel =
-    altText ??
-    (avatar
-      ? [avatar.altText, ...hats.map((h) => h.altText)].join(" ")
-      : "Ukendt avatar");
+  const composedLabel = altText ?? (avatar ? avatar.altText : "Ukendt avatar");
 
   const dim = SIZE_PX[size];
 
@@ -74,22 +58,22 @@ export function Avatar({
       )}
       style={{ width: dim, height: dim }}
     >
-      <span aria-hidden="true" className={cn("select-none", EMOJI_SIZE[size])}>
-        {avatar ? avatar.emoji : PLACEHOLDER}
-      </span>
-      {hats.map((hat) => (
-        <span
-          key={hat.id}
+      {avatar ? (
+        <Image
+          src={avatar.imageSrc}
+          alt=""
           aria-hidden="true"
-          className={cn(
-            "absolute inset-0 flex items-center justify-center pointer-events-none select-none",
-            EMOJI_SIZE[size],
-          )}
-          style={{ transform: hat.transform }}
-        >
-          {hat.emoji}
+          width={256}
+          height={256}
+          className="h-full w-full select-none object-contain"
+          sizes={`${dim}px`}
+          priority={size === "lg"}
+        />
+      ) : (
+        <span aria-hidden="true" className="select-none text-2xl leading-none">
+          {PLACEHOLDER}
         </span>
-      ))}
+      )}
       {badge && (
         <span className="absolute -bottom-1 -right-1 z-10 flex items-center justify-center">
           {badge}
