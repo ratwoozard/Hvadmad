@@ -6,12 +6,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
+import { FallingFoods } from "@/components/landing/FallingFoods";
+import { WRopeReveal } from "@/components/landing/WRopeReveal";
 import { EASING, DURATION } from "@/lib/motion/tokens";
 
 export default function Home() {
   const router = useRouter();
   const [joinCode, setJoinCode] = useState("");
   const [showJoin, setShowJoin] = useState(false);
+  const [showCredits, setShowCredits] = useState(false);
 
   const handleJoin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,28 +24,19 @@ export default function Home() {
     }
   };
 
-  // Render the background as `fixed` so it ignores the layout's `max-w-md`
-  // <main> and actually covers the whole viewport. Placed before the content
-  // in source order so it paints underneath without needing a negative z-index
-  // (which would clash with body's `bg-gray-50`).
+  // Warm, brand-aligned gradient. Sits at z-0 (above body bg-gray-50) and is
+  // pointer-events-none so it never eats clicks. The image background was
+  // replaced because it was too busy behind the foreground content and
+  // competing with the falling-food rain layer (z-20) we now render on top.
   const background = (
-    <>
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage: "url('/backgrounds/frontpage-food-bg.png')",
-        }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 bg-gradient-to-b from-white/40 via-white/55 to-white/65"
-      />
-    </>
+    <div
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-b from-brand-50 via-orange-50 to-amber-100"
+    />
   );
 
   const content = (
-    <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-8">
+    <div className="pointer-events-auto relative z-10 flex w-full max-w-sm flex-col items-center gap-8">
       <motion.div
         className="text-center"
         initial={{ opacity: 0, y: 16 }}
@@ -139,7 +133,19 @@ export default function Home() {
   return (
     <>
       {background}
-      <div className="relative flex min-h-[80vh] w-full flex-col items-center justify-center px-4 py-10">
+      <FallingFoods
+        onCatch={() => setShowCredits(true)}
+        paused={showCredits}
+      />
+      <WRopeReveal
+        open={showCredits}
+        onClose={() => setShowCredits(false)}
+      />
+      {/* `pointer-events-none` on the wrapper so the empty whitespace
+          surrounding the centered card lets clicks fall through to the
+          falling-food layer underneath. The inner `content` div re-enables
+          pointer events for the real CTA stack. */}
+      <div className="pointer-events-none relative z-30 flex min-h-[80vh] w-full flex-col items-center justify-center px-4 py-10">
         {content}
       </div>
     </>

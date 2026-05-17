@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { MotionProvider } from "@/components/ui/MotionConfig";
-import { Footer } from "@/components/ui/Footer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -42,7 +41,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.WeGoDigital.dk" />
       </head>
       <body
-        className={`${inter.variable} grid min-h-screen grid-rows-[1fr_auto] bg-gray-50 font-sans`}
+        className={`${inter.variable} min-h-screen bg-gray-50 font-sans`}
       >
         <MotionProvider>
           <a
@@ -54,7 +53,6 @@ export default function RootLayout({
           <main id="main" className="mx-auto w-full max-w-md px-4 py-6">
             {children}
           </main>
-          <Footer />
         </MotionProvider>
       </body>
     </html>
