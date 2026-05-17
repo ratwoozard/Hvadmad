@@ -7,11 +7,9 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { EASING, DURATION } from "@/lib/motion/tokens";
-import { useSceneTransition } from "@/components/transitions/TransitionProvider";
 
 export default function Home() {
   const router = useRouter();
-  const { pixelateTo, isTransitioning } = useSceneTransition();
   const [joinCode, setJoinCode] = useState("");
   const [showJoin, setShowJoin] = useState(false);
 
@@ -59,10 +57,9 @@ export default function Home() {
 
       <div className="flex w-full flex-col gap-4">
         <Button
-          onClick={() => pixelateTo("/opret", { pattern: "wave" })}
+          onClick={() => router.push("/opret")}
           size="lg"
           fullWidth
-          disabled={isTransitioning}
         >
           🎉 Opret madrum
         </Button>

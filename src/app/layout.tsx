@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { MotionProvider } from "@/components/ui/MotionConfig";
-import { TransitionProvider } from "@/components/transitions/TransitionProvider";
 import { Footer } from "@/components/ui/Footer";
 
 const inter = Inter({
@@ -46,18 +45,16 @@ export default function RootLayout({
         className={`${inter.variable} grid min-h-screen grid-rows-[1fr_auto] bg-gray-50 font-sans`}
       >
         <MotionProvider>
-          <TransitionProvider>
-            <a
-              href="#main"
-              className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-brand-500 focus:px-3 focus:py-2 focus:text-white"
-            >
-              Spring til indhold
-            </a>
-            <main id="main" className="mx-auto w-full max-w-md px-4 py-6">
-              {children}
-            </main>
-            <Footer />
-          </TransitionProvider>
+          <a
+            href="#main"
+            className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-brand-500 focus:px-3 focus:py-2 focus:text-white"
+          >
+            Spring til indhold
+          </a>
+          <main id="main" className="mx-auto w-full max-w-md px-4 py-6">
+            {children}
+          </main>
+          <Footer />
         </MotionProvider>
       </body>
     </html>

@@ -30,6 +30,12 @@ export interface HostTransferPayload {
   reason: "disconnect_timeout" | "manual";
 }
 
+export interface ReactionPayload {
+  symbol: string;
+  session_id: string;
+  nickname: string;
+}
+
 export function createRoomChannel(roomCode: string): RealtimeChannel {
   return supabase.channel(`room:${roomCode}`);
 }
@@ -104,6 +110,17 @@ export function broadcastHostTransfer(
   channel.send({
     type: "broadcast",
     event: "host_transfer",
+    payload,
+  });
+}
+
+export function broadcastReaction(
+  channel: RealtimeChannel,
+  payload: ReactionPayload
+) {
+  channel.send({
+    type: "broadcast",
+    event: "reaction",
     payload,
   });
 }

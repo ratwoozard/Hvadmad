@@ -27,13 +27,14 @@ import {
   EMPTY_GROUP,
 } from "@/lib/avatars/attribution";
 import { getSessionId } from "@/lib/session";
+import { ReactionBar } from "@/components/reactions/ReactionBar";
 
 interface ResultatProps {
   room: Room;
   participant: Participant;
 }
 
-export default function Resultat({ room }: ResultatProps) {
+export default function Resultat({ room, participant }: ResultatProps) {
   const [results, setResults] = useState<MatchResult[]>([]);
   const [votes, setVotes] = useState<Vote[]>([]);
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -104,7 +105,7 @@ export default function Resultat({ room }: ResultatProps) {
   }));
 
   return (
-    <div className="flex flex-col gap-6 py-4">
+    <div className="flex flex-col gap-6 py-4 pb-32">
       <motion.div
         className="text-center"
         initial={{ opacity: 0, y: 12 }}
@@ -174,6 +175,18 @@ export default function Resultat({ room }: ResultatProps) {
       <Button as="a" href="/" variant="secondary" fullWidth>
         🏠 Start forfra
       </Button>
+
+      {sessionId && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-4">
+          <div className="pointer-events-auto">
+            <ReactionBar
+              roomCode={room.code}
+              sessionId={sessionId}
+              nickname={participant.nickname}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
