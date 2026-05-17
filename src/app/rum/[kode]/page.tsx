@@ -10,8 +10,10 @@ import {
 import { supabase } from "@/lib/supabase/client";
 import type { Room, Participant } from "@/types/room";
 import Lobby from "./lobby";
+import Indsamling from "./indsamling";
 import Stemme from "./stemme";
 import Resultat from "./resultat";
+import { Icon } from "@/components/ui/Icon";
 
 export default function RumPage() {
   const params = useParams();
@@ -111,13 +113,15 @@ export default function RumPage() {
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [room?.id, refreshParticipants]);
+  }, [room, refreshParticipants]);
 
   if (loading) {
     return (
       <div className="flex min-h-[80vh] items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl animate-bounce">🍕</div>
+          <div className="inline-block animate-bounce">
+            <Icon name="food-pizza" size={56} />
+          </div>
           <p className="mt-2 text-gray-500">Indlæser rum...</p>
         </div>
       </div>
@@ -129,7 +133,10 @@ export default function RumPage() {
       <div className="flex min-h-[80vh] flex-col items-center justify-center gap-4">
         <div className="text-4xl">😕</div>
         <p className="text-center text-gray-600">{error}</p>
-        <a href="/" className="btn-secondary">
+        <a
+          href="/"
+          className="inline-flex min-h-touch min-w-touch items-center justify-center rounded-xl border-2 border-brand-500 bg-white px-6 py-3 font-semibold text-brand-700 transition-colors hover:bg-brand-50"
+        >
           Gå til forsiden
         </a>
       </div>
@@ -149,7 +156,18 @@ export default function RumPage() {
             setRoom(r);
             roomRef.current = r;
           }}
-          onParticipantsUpdate={setParticipants}
+        />
+      );
+    case "collecting":
+      return (
+        <Indsamling
+          room={room}
+          participant={participant}
+          participants={participants}
+          onRoomUpdate={(r) => {
+            setRoom(r);
+            roomRef.current = r;
+          }}
         />
       );
     case "voting":
@@ -158,6 +176,7 @@ export default function RumPage() {
         <Stemme
           room={room}
           participant={participant}
+          participants={participants}
           onRoomUpdate={(r) => {
             setRoom(r);
             roomRef.current = r;

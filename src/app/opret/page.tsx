@@ -5,32 +5,37 @@ import { useRouter } from "next/navigation";
 import { generateRoomCode } from "@/lib/room/codes";
 import { getSessionId } from "@/lib/session";
 import { createRoom, joinRoom } from "@/lib/supabase/queries";
-import {
-  CATEGORY_LABELS,
-  CATEGORY_EMOJIS,
-  type VotingCategory,
-} from "@/types/room";
-
-const CATEGORIES: VotingCategory[] = [
-  "hjemmelavet",
-  "takeaway",
-  "restaurant",
-  "koekkentype",
-  "hurtig",
-];
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Card } from "@/components/ui/Card";
+import { CharacterPicker } from "@/components/avatar/CharacterPicker";
+import type { AvatarConfiguration } from "@/types/avatar";
+import { EMPTY_CONFIG } from "@/lib/avatars/default";
 
 export default function OpretPage() {
   const router = useRouter();
   const [nickname, setNickname] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState("");
+  const [characterError, setCharacterError] = useState("");
+  const [config, setConfig] = useState<AvatarConfiguration>(EMPTY_CONFIG);
 
-  const handleCreate = async () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     if (nickname.trim().length < 2) {
       setError("Nickname skal være mindst 2 tegn");
       return;
     }
+    if (!config.avatar_id) {
+      setCharacterError("Vælg en karakter for at fortsætte");
+      return;
+    }
+    setError("");
+    setCharacterError("");
+    void finalize(config);
+  };
 
+  const finalize = async (chosen: AvatarConfiguration) => {
     setIsCreating(true);
     setError("");
 
@@ -39,62 +44,72 @@ export default function OpretPage() {
       const code = generateRoomCode();
 
       const room = await createRoom(code, sessionId, nickname.trim());
-      await joinRoom(room.id, sessionId, nickname.trim(), true);
+      await joinRoom(room.id, sessionId, nickname.trim(), true, chosen);
 
       router.push(`/rum/${room.code}`);
-    } catch (e: any) {
-      setError(e.message || "Noget gik galt. Prøv igen.");
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error ? e.message : "Noget gik galt. Prøv igen.";
+      setError(message);
       setIsCreating(false);
     }
   };
 
   return (
     <div className="flex min-h-[80vh] flex-col gap-6">
-      <button
+      <Button
         onClick={() => router.back()}
-        className="self-start text-sm text-gray-500 hover:text-gray-700"
+        variant="ghost"
+        size="sm"
+        className="self-start"
       >
         ← Tilbage
-      </button>
+      </Button>
 
       <div className="text-center">
         <h1 className="text-2xl font-bold text-gray-900">Opret madrum</h1>
         <p className="mt-1 text-gray-600">
-          Vælg et nickname, så opretter vi et rum til dig
+          Skriv dit nickname og vælg en karakter
         </p>
       </div>
 
-      <div className="card">
-        <label
-          htmlFor="nickname"
-          className="mb-2 block text-sm font-medium text-gray-700"
-        >
-          Dit nickname
-        </label>
-        <input
-          id="nickname"
-          type="text"
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
-          placeholder="F.eks. Christian"
-          className="input-field"
-          maxLength={20}
-          autoFocus
-          autoComplete="off"
-        />
-      </div>
+      <Card>
+        <form onSubmit={handleSubmit}>
+          <Input
+            id="nickname"
+            label="Dit nickname"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            placeholder="F.eks. Christian"
+            maxLength={20}
+            autoFocus
+            autoComplete="off"
+            error={error || undefined}
+          />
 
-      {error && (
-        <p className="text-center text-sm text-red-500">{error}</p>
-      )}
+          <CharacterPicker
+            selectedAvatarId={config.avatar_id}
+            onChange={(avatarId) => {
+              setConfig({ avatar_id: avatarId, hat_ids: [] });
+              setCharacterError("");
+            }}
+            error={characterError || undefined}
+          />
 
-      <button
-        onClick={handleCreate}
-        disabled={nickname.trim().length < 2 || isCreating}
-        className="btn-primary w-full text-lg disabled:opacity-50"
-      >
-        {isCreating ? "Opretter..." : "🎉 Opret rum"}
-      </button>
+          <Button
+            type="submit"
+            disabled={
+              nickname.trim().length < 2 || !config.avatar_id || isCreating
+            }
+            loading={isCreating}
+            size="lg"
+            fullWidth
+            className="mt-5"
+          >
+            {isCreating ? "Opretter..." : "Opret rum"}
+          </Button>
+        </form>
+      </Card>
     </div>
   );
 }

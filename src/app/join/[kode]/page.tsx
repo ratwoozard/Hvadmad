@@ -5,6 +5,13 @@ import { useParams, useRouter } from "next/navigation";
 import { getSessionId } from "@/lib/session";
 import { supabase } from "@/lib/supabase/client";
 import { joinRoom, getParticipantBySession } from "@/lib/supabase/queries";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Card } from "@/components/ui/Card";
+import { Icon } from "@/components/ui/Icon";
+import { CharacterPicker } from "@/components/avatar/CharacterPicker";
+import type { AvatarConfiguration } from "@/types/avatar";
+import { EMPTY_CONFIG } from "@/lib/avatars/default";
 
 export default function JoinPage() {
   const params = useParams();
@@ -16,6 +23,8 @@ export default function JoinPage() {
   const [error, setError] = useState("");
   const [checking, setChecking] = useState(true);
   const [roomReady, setRoomReady] = useState(false);
+  const [characterError, setCharacterError] = useState("");
+  const [config, setConfig] = useState<AvatarConfiguration>(EMPTY_CONFIG);
 
   useEffect(() => {
     async function checkRoom() {
@@ -32,7 +41,7 @@ export default function JoinPage() {
 
       if (!room) {
         setError(
-          "Rummet findes ikke eller er udløbet. Tjek koden og prøv igen."
+          "Rummet findes ikke eller er udløbet. Tjek koden og prøv igen.",
         );
         setChecking(false);
         return;
@@ -56,14 +65,7 @@ export default function JoinPage() {
     checkRoom();
   }, [kode, router]);
 
-  const handleJoin = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (nickname.trim().length < 2) {
-      setError("Nickname skal være mindst 2 tegn");
-      return;
-    }
-
+  const finalize = async (chosen: AvatarConfiguration) => {
     setIsJoining(true);
     setError("");
 
@@ -91,19 +93,38 @@ export default function JoinPage() {
         return;
       }
 
-      await joinRoom(room.id, sessionId, nickname.trim(), false);
+      await joinRoom(room.id, sessionId, nickname.trim(), false, chosen);
       router.push(`/rum/${room.code}`);
-    } catch (e: any) {
-      setError(e.message || "Kunne ikke joine rummet. Prøv igen.");
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error ? e.message : "Kunne ikke joine rummet. Prøv igen.";
+      setError(message);
       setIsJoining(false);
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (nickname.trim().length < 2) {
+      setError("Nickname skal være mindst 2 tegn");
+      return;
+    }
+    if (!config.avatar_id) {
+      setCharacterError("Vælg en karakter for at fortsætte");
+      return;
+    }
+    setError("");
+    setCharacterError("");
+    void finalize(config);
   };
 
   if (checking) {
     return (
       <div className="flex min-h-[80vh] items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl animate-bounce">🔍</div>
+          <div className="inline-block animate-bounce">
+            <Icon name="ui-search" size={48} />
+          </div>
           <p className="mt-2 text-gray-500">Finder rum...</p>
         </div>
       </div>
@@ -115,9 +136,9 @@ export default function JoinPage() {
       <div className="flex min-h-[80vh] flex-col items-center justify-center gap-4">
         <div className="text-4xl">😕</div>
         <p className="text-center text-gray-600">{error}</p>
-        <a href="/" className="btn-secondary">
+        <Button as="a" href="/" variant="secondary">
           Gå til forsiden
-        </a>
+        </Button>
       </div>
     );
   }
@@ -131,35 +152,43 @@ export default function JoinPage() {
         </p>
       </div>
 
-      <form onSubmit={handleJoin} className="card w-full">
-        <label
-          htmlFor="nickname"
-          className="mb-2 block text-sm font-medium text-gray-700"
-        >
-          Vælg et nickname
-        </label>
-        <input
-          id="nickname"
-          type="text"
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
-          placeholder="F.eks. Maria"
-          className="input-field"
-          maxLength={20}
-          autoFocus
-          autoComplete="off"
-        />
+      <Card className="w-full">
+        <form onSubmit={handleSubmit}>
+          <Input
+            id="nickname"
+            label="Vælg et nickname"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            placeholder="F.eks. Maria"
+            maxLength={20}
+            autoFocus
+            autoComplete="off"
+            error={error || undefined}
+          />
 
-        {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+          <CharacterPicker
+            selectedAvatarId={config.avatar_id}
+            onChange={(avatarId) => {
+              setConfig({ avatar_id: avatarId, hat_ids: [] });
+              setCharacterError("");
+            }}
+            error={characterError || undefined}
+          />
 
-        <button
-          type="submit"
-          disabled={nickname.trim().length < 2 || isJoining}
-          className="btn-primary mt-4 w-full text-lg disabled:opacity-50"
-        >
-          {isJoining ? "Joiner..." : "🎉 Join rum"}
-        </button>
-      </form>
+          <Button
+            type="submit"
+            disabled={
+              nickname.trim().length < 2 || !config.avatar_id || isJoining
+            }
+            loading={isJoining}
+            size="lg"
+            fullWidth
+            className="mt-4"
+          >
+            {isJoining ? "Joiner..." : "Join rum"}
+          </Button>
+        </form>
+      </Card>
     </div>
   );
 }

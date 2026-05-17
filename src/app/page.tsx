@@ -2,11 +2,20 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Card } from "@/components/ui/Card";
+import { Logo } from "@/components/ui/Logo";
+import { FallingFoods } from "@/components/landing/FallingFoods";
+import { WRopeReveal } from "@/components/landing/WRopeReveal";
+import { EASING, DURATION } from "@/lib/motion/tokens";
 
 export default function Home() {
   const router = useRouter();
   const [joinCode, setJoinCode] = useState("");
   const [showJoin, setShowJoin] = useState(false);
+  const [showCredits, setShowCredits] = useState(false);
 
   const handleJoin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,78 +25,138 @@ export default function Home() {
     }
   };
 
-  return (
-    <div className="flex min-h-[80vh] flex-col items-center justify-center gap-8">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900">
-          🍕 HvadMad
-        </h1>
-        <p className="mt-2 text-lg text-gray-600">
+  // Warm, brand-aligned gradient. Sits at z-0 (above body bg-gray-50) and is
+  // pointer-events-none so it never eats clicks. The image background was
+  // replaced because it was too busy behind the foreground content and
+  // competing with the falling-food rain layer (z-20) we now render on top.
+  const background = (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-b from-brand-50 via-orange-50 to-amber-100"
+    />
+  );
+
+  const content = (
+    <div className="pointer-events-auto relative z-10 flex w-full max-w-sm flex-col items-center gap-8">
+      <motion.div
+        className="flex flex-col items-center text-center"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: DURATION.base, ease: EASING.out }}
+      >
+        <Logo
+          variant="primary"
+          width={240}
+          height={240}
+          priority
+          alt="HvadMad – Hvad skal vi spise?"
+          className="drop-shadow-sm"
+        />
+        <h1 className="sr-only">HvadMad</h1>
+        <p className="mt-1 text-lg text-gray-600">
           Hvad skal vi spise? Stem sammen!
         </p>
-      </div>
+      </motion.div>
 
       <div className="flex w-full flex-col gap-4">
-        <button
+        <Button
           onClick={() => router.push("/opret")}
-          className="btn-primary w-full text-lg"
+          size="lg"
+          fullWidth
         >
           🎉 Opret madrum
-        </button>
+        </Button>
 
-        {!showJoin ? (
-          <button
-            onClick={() => setShowJoin(true)}
-            className="btn-secondary w-full text-lg"
-          >
-            🔗 Join et rum
-          </button>
-        ) : (
-          <form onSubmit={handleJoin} className="card animate-slide-up">
-            <label
-              htmlFor="join-code"
-              className="mb-2 block text-sm font-medium text-gray-700"
+        <Button
+          onClick={() => router.push("/solo")}
+          variant="secondary"
+          size="lg"
+          fullWidth
+        >
+          🧑 Spil solo
+        </Button>
+
+        <AnimatePresence mode="wait" initial={false}>
+          {!showJoin ? (
+            <motion.div
+              key="join-button"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: DURATION.fast }}
             >
-              Indtast rumkode
-            </label>
-            <div className="flex gap-2">
-              <input
-                id="join-code"
-                type="text"
-                value={joinCode}
-                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                placeholder="F.eks. ABCD5"
-                className="input-field flex-1 text-center text-2xl uppercase tracking-widest"
-                maxLength={6}
-                autoFocus
-                autoComplete="off"
-              />
-              <button
-                type="submit"
-                disabled={joinCode.trim().length < 4}
-                className="btn-primary disabled:opacity-50"
+              <Button
+                onClick={() => setShowJoin(true)}
+                variant="secondary"
+                size="lg"
+                fullWidth
               >
-                Gå
-              </button>
-            </div>
-          </form>
-        )}
+                🔗 Join et rum
+              </Button>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="join-form"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: DURATION.base, ease: EASING.out }}
+            >
+              <Card>
+                <form onSubmit={handleJoin}>
+                  <Input
+                    id="join-code"
+                    label="Indtast rumkode"
+                    value={joinCode}
+                    onChange={(e) =>
+                      setJoinCode(e.target.value.toUpperCase())
+                    }
+                    placeholder="F.eks. ABCD5"
+                    className="text-center text-2xl uppercase tracking-widest"
+                    maxLength={6}
+                    autoFocus
+                    autoComplete="off"
+                  />
+                  <div className="mt-4 flex gap-2">
+                    <Button
+                      type="submit"
+                      disabled={joinCode.trim().length < 4}
+                      fullWidth
+                    >
+                      Gå
+                    </Button>
+                  </div>
+                </form>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <p className="text-center text-sm text-gray-400">
         Ingen login. Ingen data. Bare mad. 🍽️
       </p>
-
-      <footer className="mt-12 text-center text-[11px] text-gray-300">
-        <a
-          href="https://www.WeGoDigital.dk"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:text-gray-400 transition-colors"
-        >
-          WeGoDigital.dk
-        </a>
-      </footer>
     </div>
+  );
+
+  return (
+    <>
+      {background}
+      <FallingFoods
+        onCatch={() => setShowCredits(true)}
+        paused={showCredits}
+      />
+      <WRopeReveal
+        open={showCredits}
+        onClose={() => setShowCredits(false)}
+      />
+      {/* `pointer-events-none` on the wrapper so the empty whitespace
+          surrounding the centered card lets clicks fall through to the
+          falling-food layer underneath. The inner `content` div re-enables
+          pointer events for the real CTA stack. */}
+      <div className="pointer-events-none relative z-30 flex min-h-[80vh] w-full flex-col items-center justify-center px-4 py-10">
+        {content}
+      </div>
+    </>
   );
 }
