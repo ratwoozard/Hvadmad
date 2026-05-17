@@ -8,6 +8,7 @@ import {
   updateRoomStatus,
   getFoodOptionsByCategory,
   setRoomFoodOptions,
+  startCollectingPhase,
 } from "@/lib/supabase/queries";
 import { supabase } from "@/lib/supabase/client";
 import { selectRandomOptions } from "@/lib/food/selection";
@@ -17,6 +18,7 @@ import { Card } from "@/components/ui/Card";
 import { cn, FOCUS_RING } from "@/components/ui/FocusRing";
 import { fadeUp } from "@/lib/motion/variants";
 import { AvatarBadge } from "@/components/avatar/AvatarBadge";
+import { MadmojiMayhem } from "@/components/lobby/MadmojiMayhem";
 
 const CATEGORIES: VotingCategory[] = [
   "hjemmelavet",
@@ -26,7 +28,16 @@ const CATEGORIES: VotingCategory[] = [
   "hurtig",
 ];
 
-type VoteMode = "category" | "vote-category" | "custom";
+type VoteMode = "category" | "vote-category" | "custom" | "collect";
+
+const COLLECT_COUNT_OPTIONS = [1, 2, 3, 4, 5] as const;
+const COLLECT_DURATION_OPTIONS: Array<{ seconds: number; label: string }> = [
+  { seconds: 60, label: "1 minut" },
+  { seconds: 120, label: "2 minutter" },
+  { seconds: 180, label: "3 minutter" },
+];
+const DEFAULT_COLLECT_COUNT = 3;
+const DEFAULT_COLLECT_DURATION = 120;
 
 interface LobbyProps {
   room: Room;
@@ -53,6 +64,12 @@ export default function Lobby({
   const [customDishes, setCustomDishes] = useState<string[]>([""]);
   const [isStarting, setIsStarting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [collectCount, setCollectCount] = useState<number>(
+    DEFAULT_COLLECT_COUNT,
+  );
+  const [collectDuration, setCollectDuration] = useState<number>(
+    DEFAULT_COLLECT_DURATION,
+  );
 
   const isHost = participant.is_host;
   const shareUrl =
@@ -119,6 +136,21 @@ export default function Lobby({
         }
         await updateRoomStatus(room.id, "voting", "koekkentype");
         onRoomUpdate({ ...room, status: "voting", category: "koekkentype" });
+      } else if (voteMode === "collect" && selectedCategory) {
+        const deadlineMs = Date.now() + collectDuration * 1000;
+        await startCollectingPhase(
+          room.id,
+          selectedCategory,
+          collectCount,
+          deadlineMs,
+        );
+        onRoomUpdate({
+          ...room,
+          status: "collecting",
+          category: selectedCategory,
+          collect_count: collectCount,
+          collect_deadline: new Date(deadlineMs).toISOString(),
+        });
       } else if (voteMode === "custom" && validCustomDishes.length >= 2) {
         const customOptions = validCustomDishes.map((dish) => ({
           name: dish.trim(),
@@ -150,7 +182,8 @@ export default function Lobby({
   const canStart =
     (voteMode === "category" && selectedCategory) ||
     voteMode === "vote-category" ||
-    (voteMode === "custom" && validCustomDishes.length >= 2);
+    (voteMode === "custom" && validCustomDishes.length >= 2) ||
+    (voteMode === "collect" && selectedCategory && participants.length >= 2);
 
   return (
     <div className="flex flex-col gap-6">
@@ -272,6 +305,27 @@ export default function Lobby({
                 </p>
               </div>
             </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setVoteMode("collect");
+                setSelectedCategory(null);
+              }}
+              className={cn(
+                MODE_OPTION,
+                voteMode === "collect" ? MODE_SELECTED : MODE_IDLE,
+                FOCUS_RING,
+              )}
+            >
+              <span className="text-xl">🧺</span>
+              <div>
+                <span className="font-medium">Alle vælger fra liste</span>
+                <p className="text-xs text-gray-500">
+                  Hver person plukker et antal retter — på tid
+                </p>
+              </div>
+            </button>
           </div>
 
           <AnimatePresence mode="wait" initial={false}>
@@ -376,6 +430,109 @@ export default function Lobby({
                 )}
               </motion.div>
             )}
+
+            {voteMode === "collect" && (
+              <motion.div
+                key="collect"
+                variants={fadeUp}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="flex flex-col gap-4"
+              >
+                <div>
+                  <p className="mb-2 text-sm font-medium text-gray-600">
+                    Vælg kategori:
+                  </p>
+                  <div className="grid grid-cols-1 gap-2">
+                    {CATEGORIES.map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setSelectedCategory(cat)}
+                        className={cn(
+                          MODE_OPTION,
+                          selectedCategory === cat
+                            ? MODE_SELECTED
+                            : MODE_IDLE,
+                          FOCUS_RING,
+                        )}
+                      >
+                        <span className="text-xl">
+                          {CATEGORY_EMOJIS[cat]}
+                        </span>
+                        <span className="text-sm font-medium">
+                          {CATEGORY_LABELS[cat]}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="mb-2 text-sm font-medium text-gray-600">
+                    Antal pr. person:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {COLLECT_COUNT_OPTIONS.map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setCollectCount(n)}
+                        aria-pressed={collectCount === n}
+                        className={cn(
+                          "min-h-touch min-w-touch rounded-xl border-2 px-4 text-sm font-semibold transition-all",
+                          collectCount === n
+                            ? "border-brand-500 bg-brand-100 text-brand-800"
+                            : "border-transparent bg-gray-50 text-gray-700 hover:bg-gray-100",
+                          FOCUS_RING,
+                        )}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="mb-2 text-sm font-medium text-gray-600">
+                    Tidsgrænse:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {COLLECT_DURATION_OPTIONS.map((d) => (
+                      <button
+                        key={d.seconds}
+                        type="button"
+                        onClick={() => setCollectDuration(d.seconds)}
+                        aria-pressed={collectDuration === d.seconds}
+                        className={cn(
+                          "min-h-touch rounded-xl border-2 px-4 text-sm font-semibold transition-all",
+                          collectDuration === d.seconds
+                            ? "border-brand-500 bg-brand-100 text-brand-800"
+                            : "border-transparent bg-gray-50 text-gray-700 hover:bg-gray-100",
+                          FOCUS_RING,
+                        )}
+                      >
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
+                  Hver deltager skal vælge {collectCount}{" "}
+                  {collectCount === 1 ? "ret" : "retter"} fra listen. Når en
+                  ret er valgt, kan andre ikke vælge den. Når tiden løber ud
+                  (eller alle er færdige), starter afstemningen automatisk.
+                </div>
+
+                {participants.length < 2 && (
+                  <p className="text-xs text-gray-500">
+                    Denne mode kræver mindst 2 deltagere.
+                  </p>
+                )}
+              </motion.div>
+            )}
           </AnimatePresence>
 
           <Button
@@ -399,6 +556,8 @@ export default function Lobby({
           <div className="mt-2 animate-pulse text-2xl">⏳</div>
         </Card>
       )}
+
+      <MadmojiMayhem />
     </div>
   );
 }

@@ -1,5 +1,11 @@
 import { supabase } from "./client";
-import type { Room, Participant, RoomStatus, VotingCategory } from "@/types/room";
+import type {
+  Room,
+  Participant,
+  ParticipantPick,
+  RoomStatus,
+  VotingCategory,
+} from "@/types/room";
 import type { Vote, VoteValue } from "@/types/voting";
 import type { FoodOption } from "@/types/food";
 import type { AvatarConfiguration } from "@/types/avatar";
@@ -94,6 +100,16 @@ export async function joinRoom(
     .single();
 
   if (error && avatar && isMissingAvatarSchemaError(error)) {
+    if (typeof console !== "undefined") {
+      // Hjælp udvikleren: avatar_id/hat_ids-kolonnerne mangler i databasen.
+      // Kør migrationen `supabase/migrations/008_add_avatar.sql` for at få
+      // valgte karakterer gemt korrekt.
+      console.warn(
+        "[hvadmad] Avatar-kolonnerne mangler i 'participants'. " +
+          "Joiner uden avatar (placeholder vises). " +
+          "Kør `supabase db reset` eller anvend migration 008_add_avatar.sql.",
+      );
+    }
     const fallback = await supabase
       .from("participants")
       .insert(baseInsertRow)
@@ -230,4 +246,131 @@ export async function getParticipantBySession(
 
   if (error) return null;
   return data;
+}
+
+// ----------------------------------------------------------------------------
+// "Alle vælger fra liste" (collecting) mode
+// ----------------------------------------------------------------------------
+
+/**
+ * Move a room into the collecting phase. The host configures category, the
+ * required pick count per participant, and a hard deadline (ms in the future).
+ */
+export async function startCollectingPhase(
+  roomId: string,
+  category: VotingCategory,
+  collectCount: number,
+  deadlineMs: number,
+): Promise<void> {
+  const deadline = new Date(deadlineMs).toISOString();
+  const { error } = await supabase
+    .from("rooms")
+    .update({
+      status: "collecting",
+      category,
+      collect_count: collectCount,
+      collect_deadline: deadline,
+      last_activity: new Date().toISOString(),
+    })
+    .eq("id", roomId);
+
+  if (error)
+    throw new Error(`Kunne ikke starte indsamling: ${error.message}`);
+}
+
+/**
+ * Attempt to claim a food option for a participant. Returns true on success,
+ * false if another participant already claimed it (DB primary key collision)
+ * so the UI can refresh and grey it out.
+ */
+export async function claimPick(
+  roomId: string,
+  participantId: string,
+  foodOptionId: string,
+): Promise<{ ok: boolean; reason?: "taken" | "error"; message?: string }> {
+  const { error } = await supabase.from("participant_picks").insert({
+    room_id: roomId,
+    participant_id: participantId,
+    food_option_id: foodOptionId,
+  });
+
+  if (!error) return { ok: true };
+
+  if (error.code === "23505") {
+    return { ok: false, reason: "taken" };
+  }
+  return { ok: false, reason: "error", message: error.message };
+}
+
+export async function releasePick(
+  roomId: string,
+  participantId: string,
+  foodOptionId: string,
+): Promise<void> {
+  const { error } = await supabase
+    .from("participant_picks")
+    .delete()
+    .eq("room_id", roomId)
+    .eq("participant_id", participantId)
+    .eq("food_option_id", foodOptionId);
+
+  if (error) throw new Error(`Kunne ikke fjerne valg: ${error.message}`);
+}
+
+export async function getRoomPicks(roomId: string): Promise<ParticipantPick[]> {
+  const { data, error } = await supabase
+    .from("participant_picks")
+    .select()
+    .eq("room_id", roomId);
+
+  if (error) throw new Error(`Kunne ikke hente valg: ${error.message}`);
+  return data;
+}
+
+/**
+ * End the collecting phase and seed the voting pool with the union of every
+ * participant's picks. Idempotent — if another client already flipped the
+ * room into `voting`, this is a no-op.
+ *
+ * Returns true if THIS call performed the transition (so the caller can
+ * trigger a single broadcast), false if someone beat us to it or there were
+ * no picks at all.
+ */
+export async function finalizeCollectingPhase(
+  roomId: string,
+): Promise<boolean> {
+  const { data: room } = await supabase
+    .from("rooms")
+    .select("status, category")
+    .eq("id", roomId)
+    .single();
+
+  if (!room || room.status !== "collecting") return false;
+
+  const picks = await getRoomPicks(roomId);
+  const uniqueFoodIds = Array.from(new Set(picks.map((p) => p.food_option_id)));
+
+  if (uniqueFoodIds.length === 0) return false;
+
+  // Atomically claim the transition: only succeeds while status is still
+  // 'collecting'. Prevents two clients from double-seeding the food options.
+  const { data: updated, error: updateError } = await supabase
+    .from("rooms")
+    .update({
+      status: "voting",
+      last_activity: new Date().toISOString(),
+    })
+    .eq("id", roomId)
+    .eq("status", "collecting")
+    .select("id");
+
+  if (updateError) {
+    throw new Error(
+      `Kunne ikke afslutte indsamling: ${updateError.message}`,
+    );
+  }
+  if (!updated || updated.length === 0) return false;
+
+  await setRoomFoodOptions(roomId, uniqueFoodIds);
+  return true;
 }

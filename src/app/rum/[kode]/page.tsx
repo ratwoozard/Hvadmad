@@ -10,8 +10,10 @@ import {
 import { supabase } from "@/lib/supabase/client";
 import type { Room, Participant } from "@/types/room";
 import Lobby from "./lobby";
+import Indsamling from "./indsamling";
 import Stemme from "./stemme";
 import Resultat from "./resultat";
+import { Icon } from "@/components/ui/Icon";
 
 export default function RumPage() {
   const params = useParams();
@@ -117,7 +119,9 @@ export default function RumPage() {
     return (
       <div className="flex min-h-[80vh] items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl animate-bounce">🍕</div>
+          <div className="inline-block animate-bounce">
+            <Icon name="food-pizza" size={56} />
+          </div>
           <p className="mt-2 text-gray-500">Indlæser rum...</p>
         </div>
       </div>
@@ -145,6 +149,18 @@ export default function RumPage() {
     case "lobby":
       return (
         <Lobby
+          room={room}
+          participant={participant}
+          participants={participants}
+          onRoomUpdate={(r) => {
+            setRoom(r);
+            roomRef.current = r;
+          }}
+        />
+      );
+    case "collecting":
+      return (
+        <Indsamling
           room={room}
           participant={participant}
           participants={participants}

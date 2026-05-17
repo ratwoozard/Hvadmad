@@ -16,6 +16,7 @@ import { selectRandomOptions } from "@/lib/food/selection";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
+import { Icon } from "@/components/ui/Icon";
 import { cn, FOCUS_RING } from "@/components/ui/FocusRing";
 import { VoteCard, type VoteDirection } from "@/components/voting/VoteCard";
 import { VoteProgress } from "@/components/voting/VoteProgress";
@@ -496,7 +497,7 @@ export default function SoloPage() {
           🔁 Prøv igen
         </Button>
         <Button as="a" href="/" variant="secondary">
-          🏠 Forsiden
+          <Icon name="nav-home" size={20} className="mr-2" /> Forsiden
         </Button>
       </div>
     );
@@ -590,7 +591,7 @@ export default function SoloPage() {
           🔁 Stem igen
         </Button>
         <Button as="a" href="/" variant="secondary" fullWidth>
-          🏠 Forsiden
+          <Icon name="nav-home" size={20} className="mr-2" /> Forsiden
         </Button>
       </div>
     </div>

@@ -1,4 +1,9 @@
-export type RoomStatus = "lobby" | "voting" | "calculating" | "results";
+export type RoomStatus =
+  | "lobby"
+  | "collecting"
+  | "voting"
+  | "calculating"
+  | "results";
 
 export type ParticipantStatus =
   | "active"
@@ -24,6 +29,17 @@ export interface Room {
   created_at: string;
   last_activity: string;
   expires_at: string;
+  /** How many dishes each participant must pick in "collecting" mode. */
+  collect_count: number | null;
+  /** Hard deadline for the collecting phase (ISO string). */
+  collect_deadline: string | null;
+}
+
+export interface ParticipantPick {
+  room_id: string;
+  food_option_id: string;
+  participant_id: string;
+  picked_at: string;
 }
 
 export interface Participant {

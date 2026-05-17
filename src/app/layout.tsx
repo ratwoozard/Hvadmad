@@ -13,12 +13,31 @@ export const metadata: Metadata = {
   description:
     "Kan I ikke beslutte jer for hvad I skal spise? Opret et madrum, stem sammen, og find gruppens bedste match!",
   icons: {
-    icon: "/favicon.svg",
+    icon: [
+      { url: "/branding/favicon-512.png", type: "image/png", sizes: "512x512" },
+      { url: "/branding/logo-mark.png", type: "image/png", sizes: "any" },
+    ],
+    apple: [{ url: "/branding/app-icon.png", sizes: "180x180" }],
+    shortcut: ["/branding/favicon-512.png"],
   },
   openGraph: {
     title: "HvadMad – Hvad skal vi spise?",
     description: "Stem sammen om aftensmaden. Hurtigt, sjovt og retfærdigt.",
     type: "website",
+    images: [
+      {
+        url: "/branding/logo-primary.png",
+        width: 1024,
+        height: 1024,
+        alt: "HvadMad logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "HvadMad – Hvad skal vi spise?",
+    description: "Stem sammen om aftensmaden. Hurtigt, sjovt og retfærdigt.",
+    images: ["/branding/logo-primary.png"],
   },
 };
 

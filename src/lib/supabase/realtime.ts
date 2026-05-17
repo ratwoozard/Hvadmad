@@ -10,10 +10,16 @@ export interface PresenceState {
 }
 
 export interface RoomStatusChangePayload {
-  new_status: "lobby" | "voting" | "calculating" | "results";
+  new_status: "lobby" | "collecting" | "voting" | "calculating" | "results";
   category?: string;
   food_option_count?: number;
   triggered_by: string;
+}
+
+export interface PickChangePayload {
+  participant_id: string;
+  food_option_id: string;
+  action: "claim" | "release";
 }
 
 export interface VoteProgressPayload {
@@ -50,6 +56,7 @@ export function subscribeToRoom(
     onStatusChange?: (payload: RoomStatusChangePayload) => void;
     onVoteProgress?: (payload: VoteProgressPayload) => void;
     onHostTransfer?: (payload: HostTransferPayload) => void;
+    onPickChange?: (payload: PickChangePayload) => void;
   }
 ): RealtimeChannel {
   channel
@@ -71,6 +78,9 @@ export function subscribeToRoom(
     })
     .on("broadcast", { event: "host_transfer" }, ({ payload }) => {
       callbacks.onHostTransfer?.(payload as HostTransferPayload);
+    })
+    .on("broadcast", { event: "pick_change" }, ({ payload }) => {
+      callbacks.onPickChange?.(payload as PickChangePayload);
     })
     .subscribe(async (status) => {
       if (status === "SUBSCRIBED") {
@@ -121,6 +131,17 @@ export function broadcastReaction(
   channel.send({
     type: "broadcast",
     event: "reaction",
+    payload,
+  });
+}
+
+export function broadcastPickChange(
+  channel: RealtimeChannel,
+  payload: PickChangePayload,
+) {
+  channel.send({
+    type: "broadcast",
+    event: "pick_change",
     payload,
   });
 }

@@ -22,6 +22,7 @@ import {
 import { EASING } from "@/lib/motion/tokens";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Icon } from "@/components/ui/Icon";
 import { WinnerHero } from "@/components/results/WinnerHero";
 import { VoteBars } from "@/components/results/VoteBars";
 import { ParticipantPicks } from "@/components/results/ParticipantPicks";
@@ -84,7 +85,9 @@ export default function Resultat({ room, participant }: ResultatProps) {
     return (
       <div className="flex min-h-[80vh] items-center justify-center">
         <div className="text-center">
-          <div className="animate-bounce text-4xl">📊</div>
+          <div className="inline-block animate-bounce">
+            <Icon name="ui-gauge" size={48} />
+          </div>
           <p className="mt-2 text-gray-500">Beregner resultater...</p>
         </div>
       </div>
@@ -100,7 +103,7 @@ export default function Resultat({ room, participant }: ResultatProps) {
           Gruppen kunne ikke blive enig om noget. Prøv en anden kategori!
         </p>
         <Button as="a" href="/" className="mt-4">
-          🏠 Start forfra
+          <Icon name="nav-home" size={20} className="mr-2" /> Start forfra
         </Button>
       </div>
     );
@@ -140,8 +143,8 @@ export default function Resultat({ room, participant }: ResultatProps) {
 
       <StatCards
         mostVoted={{
-          icon: <span className="text-base">🏅</span>,
-          iconBg: "bg-amber-100 text-amber-700",
+          icon: <Icon name="status-badge-check" size={18} />,
+          iconBg: "bg-amber-100",
           label: "Mest stemt",
           value: mostVoted?.result.name ?? null,
           detail: mostVoted
@@ -149,8 +152,8 @@ export default function Resultat({ room, participant }: ResultatProps) {
             : null,
         }}
         leastVoted={{
-          icon: <span className="text-base">🌱</span>,
-          iconBg: "bg-violet-100 text-violet-700",
+          icon: <Icon name="ui-leaf" size={18} />,
+          iconBg: "bg-violet-100",
           label: "Mindst stemt",
           value: leastVoted?.result.name ?? null,
           detail: leastVoted
@@ -158,8 +161,8 @@ export default function Resultat({ room, participant }: ResultatProps) {
             : null,
         }}
         totalVotes={{
-          icon: <span className="text-base">👥</span>,
-          iconBg: "bg-sky-100 text-sky-700",
+          icon: <Icon name="nav-person" size={18} />,
+          iconBg: "bg-sky-100",
           label: "Antal stemmer",
           value: `${totalVoteCount}`,
           detail: `i alt fra ${participants.length} ${participants.length === 1 ? "person" : "personer"}`,
@@ -204,7 +207,7 @@ export default function Resultat({ room, participant }: ResultatProps) {
           🔁 Stem igen
         </Button>
         <Button as="a" href="/" variant="secondary" fullWidth size="lg">
-          🏠 Forsiden
+          <Icon name="nav-home" size={20} className="mr-2" /> Forsiden
         </Button>
       </div>
 

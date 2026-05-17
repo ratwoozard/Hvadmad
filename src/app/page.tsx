@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
+import { Logo } from "@/components/ui/Logo";
 import { FallingFoods } from "@/components/landing/FallingFoods";
 import { WRopeReveal } from "@/components/landing/WRopeReveal";
 import { EASING, DURATION } from "@/lib/motion/tokens";
@@ -38,13 +39,21 @@ export default function Home() {
   const content = (
     <div className="pointer-events-auto relative z-10 flex w-full max-w-sm flex-col items-center gap-8">
       <motion.div
-        className="text-center"
+        className="flex flex-col items-center text-center"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: DURATION.base, ease: EASING.out }}
       >
-        <h1 className="text-4xl font-bold text-gray-900">🍕 HvadMad</h1>
-        <p className="mt-2 text-lg text-gray-600">
+        <Logo
+          variant="primary"
+          width={240}
+          height={240}
+          priority
+          alt="HvadMad – Hvad skal vi spise?"
+          className="drop-shadow-sm"
+        />
+        <h1 className="sr-only">HvadMad</h1>
+        <p className="mt-1 text-lg text-gray-600">
           Hvad skal vi spise? Stem sammen!
         </p>
       </motion.div>

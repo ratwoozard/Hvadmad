@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "./Button";
 import { Card } from "./Card";
+import { Icon } from "./Icon";
 import { EASING } from "@/lib/motion/tokens";
 
 interface ConnectionLostProps {
@@ -38,8 +39,8 @@ export default function ConnectionLost({ onRetry }: ConnectionLostProps) {
         className="mx-4 w-full max-w-sm"
       >
         <Card className="text-center">
-          <div className="mb-3 text-4xl" aria-hidden="true">
-            📡
+          <div className="mb-3 flex justify-center">
+            <Icon name="status-warning" size={56} />
           </div>
           <h2 id="conn-lost-title" className="text-xl font-bold text-gray-900">
             Forbindelse mistet
@@ -54,7 +55,12 @@ export default function ConnectionLost({ onRetry }: ConnectionLostProps) {
             fullWidth
             className="mt-4"
           >
-            {retrying ? "Forbinder..." : "🔄 Prøv igen"}
+            {retrying ? "Forbinder..." : (
+              <>
+                <Icon name="ui-arrows-up-down" size={20} className="mr-2" />
+                Prøv igen
+              </>
+            )}
           </Button>
         </Card>
       </motion.div>

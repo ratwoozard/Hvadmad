@@ -8,6 +8,7 @@ import { joinRoom, getParticipantBySession } from "@/lib/supabase/queries";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
+import { Icon } from "@/components/ui/Icon";
 import { CharacterPicker } from "@/components/avatar/CharacterPicker";
 import type { AvatarConfiguration } from "@/types/avatar";
 import { EMPTY_CONFIG } from "@/lib/avatars/default";
@@ -121,7 +122,9 @@ export default function JoinPage() {
     return (
       <div className="flex min-h-[80vh] items-center justify-center">
         <div className="text-center">
-          <div className="animate-bounce text-4xl">🔍</div>
+          <div className="inline-block animate-bounce">
+            <Icon name="ui-search" size={48} />
+          </div>
           <p className="mt-2 text-gray-500">Finder rum...</p>
         </div>
       </div>
