@@ -7,12 +7,11 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { EASING, DURATION } from "@/lib/motion/tokens";
-
-const HOME_SHELL_CLASS =
-  "relative flex min-h-[80vh] w-full flex-col items-center justify-center overflow-hidden rounded-[2rem] px-4 py-10";
+import { useSceneTransition } from "@/components/transitions/TransitionProvider";
 
 export default function Home() {
   const router = useRouter();
+  const { pixelateTo, isTransitioning } = useSceneTransition();
   const [joinCode, setJoinCode] = useState("");
   const [showJoin, setShowJoin] = useState(false);
 
@@ -24,16 +23,22 @@ export default function Home() {
     }
   };
 
+  // Render the background as `fixed` so it ignores the layout's `max-w-md`
+  // <main> and actually covers the whole viewport. Placed before the content
+  // in source order so it paints underneath without needing a negative z-index
+  // (which would clash with body's `bg-gray-50`).
   const background = (
     <>
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-cover bg-center opacity-90"
-        style={{ backgroundImage: "url('/backgrounds/frontpage-food-bg.png')" }}
+        className="pointer-events-none fixed inset-0 bg-cover bg-center"
+        style={{
+          backgroundImage: "url('/backgrounds/frontpage-food-bg.png')",
+        }}
       />
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/82 to-white/75"
+        className="pointer-events-none fixed inset-0 bg-gradient-to-b from-white/40 via-white/55 to-white/65"
       />
     </>
   );
@@ -54,9 +59,10 @@ export default function Home() {
 
       <div className="flex w-full flex-col gap-4">
         <Button
-          onClick={() => router.push("/opret")}
+          onClick={() => pixelateTo("/opret", { pattern: "wave" })}
           size="lg"
           fullWidth
+          disabled={isTransitioning}
         >
           🎉 Opret madrum
         </Button>
@@ -134,9 +140,11 @@ export default function Home() {
   );
 
   return (
-    <div className={HOME_SHELL_CLASS}>
+    <>
       {background}
-      {content}
-    </div>
+      <div className="relative flex min-h-[80vh] w-full flex-col items-center justify-center px-4 py-10">
+        {content}
+      </div>
+    </>
   );
 }
